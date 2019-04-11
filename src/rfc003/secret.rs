@@ -1,11 +1,8 @@
+use crate::rfc003::secret_hash::SecretHash;
 use crypto::{digest::Digest, sha2::Sha256};
 use rand::{Rng, ThreadRng};
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-use std::{
-    fmt::{self},
-    str::FromStr,
-};
-use crate::rfc003::secret_hash::SecretHash;
+use std::{fmt, str::FromStr};
 
 #[derive(PartialEq, Debug)]
 pub enum FromErr {

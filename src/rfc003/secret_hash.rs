@@ -1,9 +1,9 @@
+use crate::rfc003::secret::Secret;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::{
     fmt::{self, Debug},
     str::FromStr,
 };
-use crate::rfc003::secret::Secret;
 
 #[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct SecretHash([u8; Self::LENGTH]);
