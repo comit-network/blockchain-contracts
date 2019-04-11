@@ -1,0 +1,16 @@
+language: rust
+cache:
+  directories:
+  - "$HOME/.cargo"
+sudo: required
+install: true
+services: docker
+script: cargo test --all
+notifications:
+  email: false
+  slack:
+    rooms:
+    - tenx-company:buMm6Pg6Sbhljx2HRLwNC44z#coblox-bots
+    on_success: never
+    on_failure: always
+    on_pull_requests: true
