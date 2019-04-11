@@ -1,11 +1,17 @@
 language: rust
+rust:
+  - stable
+  - nightly
 cache:
-  directories:
-  - "$HOME/.cargo"
+  cargo: true
 sudo: required
 install: true
 services: docker
-script: cargo test --all
+before_script:
+  - rustup component add rustfmt
+script:
+  - cargo fmt -- --check
+  - cargo test --all
 notifications:
   email: false
   slack:
