@@ -3,6 +3,7 @@ use std::{
     fmt::{self, Debug},
     str::FromStr,
 };
+use crate::rfc003::secret::Secret;
 
 #[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct SecretHash([u8; Self::LENGTH]);
@@ -24,6 +25,12 @@ impl Debug for SecretHash {
 impl<'a> From<&'a SecretHash> for SecretHash {
     fn from(s: &'a SecretHash) -> Self {
         *s
+    }
+}
+
+impl From<Secret> for SecretHash {
+    fn from(secret: Secret) -> Self {
+        secret.hash()
     }
 }
 
