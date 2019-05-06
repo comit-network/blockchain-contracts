@@ -1,2 +1,2 @@
-# blockchain_contracts
+# Blockchain contracts
 Host the assembly/script code of blockchain contracts used in the COMIT protocol
