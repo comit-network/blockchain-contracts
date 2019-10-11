@@ -1,0 +1,80 @@
+version: 2.1
+workflows:
+  version: 2
+  main:
+    jobs:
+      - check-format
+      - beta-build
+#      - stable-build
+      - beta-test:
+          requires:
+            - beta-build
+#      - stable-test:
+#          requires:
+#            - stable-build
+
+jobs:
+  check-format:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      RUST_TEST_THREADS: "8"
+    steps:
+      - checkout
+      - run:
+          name:  "Install Stable Rust"
+          command: |
+            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+            source $HOME/.cargo/env
+            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
+            rustup component add rustfmt
+            cargo install cargo-tomlfmt
+      - run:
+          name: "Git hooks"
+          command: |
+            source $HOME/.cargo/env
+            sh ./.githooks/pre-commit
+  beta-build:
+    working_directory: ~/workspace
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      RUST_TEST_THREADS: "8"
+    steps:
+      - checkout
+      - run:
+          name:  "Install Beta Rust"
+          command: |
+            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain beta
+            source $HOME/.cargo/env
+            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: "Beta Build"
+          command: |
+            rustup run beta rustc --version --verbose
+            rustup run beta cargo --version --verbose
+            rustup run beta cargo build
+      - store_artifacts:
+          path: ./target/
+  beta-test:
+    working_directory: ~/workspace
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      RUST_TEST_THREADS: "8"
+    steps:
+      - checkout
+      - run:
+          name:  "Install Beta Rust"
+          command: |
+            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain beta
+            source $HOME/.cargo/env
+            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
+      - attach_workspace:
+          at: ./target
+      - run:
+          name: "Beta Test"
+          command: |
+            rustup run beta rustc --version --verbose
+            rustup run beta cargo --version --verbose
+            rustup run beta cargo test
