@@ -112,8 +112,8 @@ commands:
             curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${DEFAULT_TOOLCHAIN}
             source $HOME/.cargo/env
             echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
-            rustup run beta rustc --version --verbose
-            rustup run beta cargo --version --verbose
+            rustup run ${DEFAULT_TOOLCHAIN} rustc --version --verbose
+            rustup run ${DEFAULT_TOOLCHAIN} cargo --version --verbose
   install_sccache:
     steps:
       - run:
