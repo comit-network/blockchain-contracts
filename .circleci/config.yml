@@ -18,15 +18,14 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      RUST_TEST_THREADS: "8"
+      - RUST_TEST_THREADS: "8"
+      - DEFAULT_TOOLCHAIN: "stable"
     steps:
       - checkout
+      - install_rust
       - run:
-          name:  "Install Stable Rust"
+          name:  "Install format crates Rust"
           command: |
-            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
-            source $HOME/.cargo/env
-            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
             rustup component add rustfmt
             cargo install cargo-tomlfmt
       - run:
@@ -39,15 +38,11 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      RUST_TEST_THREADS: "8"
+      - RUST_TEST_THREADS: "8"
+      - DEFAULT_TOOLCHAIN: "beta"
     steps:
       - checkout
-      - run:
-          name:  "Install Beta Rust"
-          command: |
-            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain beta
-            source $HOME/.cargo/env
-            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
+      - install_rust
       - run:
           name: "Beta Build"
           command: |
@@ -61,15 +56,11 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      RUST_TEST_THREADS: "8"
+      - RUST_TEST_THREADS: "8"
+      - DEFAULT_TOOLCHAIN: "beta"
     steps:
       - checkout
-      - run:
-          name:  "Install Beta Rust"
-          command: |
-            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain beta
-            source $HOME/.cargo/env
-            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
+      - install_rust
       - attach_workspace:
           at: ./target
       - run:
@@ -78,3 +69,12 @@ jobs:
             rustup run beta rustc --version --verbose
             rustup run beta cargo --version --verbose
             rustup run beta cargo test
+commands:
+  install_rust:
+    steps:
+      - run:
+          name: "Install Rust"
+          command: |
+            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${DEFAULT_TOOLCHAIN}
+            source $HOME/.cargo/env
+            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
