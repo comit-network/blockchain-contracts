@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Not much so far
+- RFC003 Basic swap for Bitcoin
+- RFC003 Basic swap for Ether
+- RFC003 Basic swap for ERC20
 
 [Unreleased]: https://github.com/coblox/blockchain-contracts/compare/ab341e430ca514576ac9ca553a35ba339f293cc3...HEAD
