@@ -5,13 +5,13 @@ workflows:
     jobs:
       - check-format
       - beta-build
-#      - stable-build
+      - stable-build
       - beta-test:
           requires:
             - beta-build
-#      - stable-test:
-#          requires:
-#            - stable-build
+      - stable-test:
+          requires:
+            - stable-build
 
 jobs:
   check-format:
@@ -43,13 +43,13 @@ jobs:
     steps:
       - checkout
       - install_rust
-      - install_sscache
-      - restore-sccache-cache
+      - install_sccache
+      - restore_sccache_cache
       - run:
           name: "Beta Build"
           command: |
-            rustup run beta cargo build
-      - save-sccache-cache
+            rustup run ${DEFAULT_TOOLCHAIN} cargo build
+      - save_sccache_cache
       - store_artifacts:
           path: ./target/
   beta-test:
@@ -67,7 +67,42 @@ jobs:
       - run:
           name: "Beta Test"
           command: |
-            rustup run beta cargo test
+            rustup run ${DEFAULT_TOOLCHAIN} cargo test
+  stable-build:
+    working_directory: ~/workspace
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      - RUST_TEST_THREADS: "8"
+      - DEFAULT_TOOLCHAIN: "stable"
+    steps:
+      - checkout
+      - install_rust
+      - install_sccache
+      - restore_sccache_cache
+      - run:
+          name: "Stable Build"
+          command: |
+            rustup run ${DEFAULT_TOOLCHAIN} cargo build
+      - save_sccache_cache
+      - store_artifacts:
+          path: ./target/
+  stable-test:
+    working_directory: ~/workspace
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      - RUST_TEST_THREADS: "8"
+      - DEFAULT_TOOLCHAIN: "stable"
+    steps:
+      - checkout
+      - install_rust
+      - attach_workspace:
+          at: ./target
+      - run:
+          name: "Stable Test"
+          command: |
+            rustup run ${DEFAULT_TOOLCHAIN} cargo test
 commands:
   install_rust:
     steps:
@@ -88,12 +123,12 @@ commands:
             echo 'export "RUSTC_WRAPPER"="sccache"' >> $BASH_ENV
             echo 'export "SCCACHE_CACHE_SIZE"="1G"' >> $BASH_ENV
             sccache --version
-  restore-sccache-cache:
+  restore_sccache_cache:
     steps:
       - restore_cache:
           name: "Restore sccache cache"
-          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
-  save-sccache-cache:
+          key: sccache-cache-${DEFAULT_TOOLCHAIN}-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
+  save_sccache_cache:
     steps:
       - save_cache:
           name: "Save sccache cache"
@@ -101,6 +136,6 @@ commands:
           # Of course, restore_cache will not find this exact key,
           # but it will fall back to the closest key (aka the most recent).
           # See https://discuss.circleci.com/t/add-mechanism-to-update-existing-cache-key/9014/13
-          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
+          key: sccache-cache-${DEFAULT_TOOLCHAIN}-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
           paths:
             - "~/.cache/sccache"
