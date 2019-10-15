@@ -15,8 +15,8 @@ use std::{
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct PubkeyHash(hash160::Hash);
 
-#[allow(dead_code)] // Only used in tests at the moment
 impl PubkeyHash {
+    #[allow(dead_code)] // Only used in tests at the moment
     fn new<C: secp256k1::Signing>(secp: &Secp256k1<C>, secret_key: &SecretKey) -> Self {
         secp256k1::PublicKey::from_secret_key(secp, secret_key).into()
     }
