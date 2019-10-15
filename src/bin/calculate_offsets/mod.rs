@@ -50,12 +50,13 @@ fn calc_offset(placeholder: &Placeholder, contract: &[u8]) -> Result<Offset, Err
     let start_pos = find_subsequence(&contract[..], &decoded_placeholder[..])
         .ok_or_else(|| Error::PlaceholderNotFound(hex::encode(&decoded_placeholder)))?;
     let end_pos = start_pos + decoded_placeholder.len();
-    Ok(Offset::new(
-        placeholder.name.to_owned(),
-        start_pos,
-        end_pos,
-        decoded_placeholder.len(),
-    ))
+
+    Ok(Offset {
+        name: placeholder.name.to_owned(),
+        start: start_pos,
+        excluded_end: end_pos,
+        length: decoded_placeholder.len(),
+    })
 }
 
 fn find_subsequence(contract_template: &[u8], placeholder: &[u8]) -> Option<usize> {

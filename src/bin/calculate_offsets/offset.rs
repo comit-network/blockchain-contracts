@@ -2,22 +2,13 @@ use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct Offset {
-    pub start: usize,
-    pub length: usize,
-    pub excluded_end: usize,
     pub name: String,
+    pub start: usize,
+    pub excluded_end: usize,
+    pub length: usize,
 }
 
 impl Offset {
-    pub fn new(name: String, start: usize, excluded_end: usize, length: usize) -> Offset {
-        Offset {
-            name,
-            start,
-            excluded_end,
-            length,
-        }
-    }
-
     fn row_format(&self) -> String {
         format!(
             "| `{}` | {}..{} | {} |",
