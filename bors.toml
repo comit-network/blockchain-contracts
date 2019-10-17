@@ -1,5 +1,5 @@
-status = ["ci/circleci: debug-build-test"]
+status = ["ci/circleci: beta-test"]
 pr_status = [
-    "ci/circleci: debug-build-test",
+    "ci/circleci: beta-test",
     "license/cla"
 ]
