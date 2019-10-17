@@ -1,7 +1,7 @@
-// https://github.com/bitcoin/bips/blob/master/bip-0125.mediawiki
-// Wallets that don't want to signal replaceability should use either a
-// max sequence number (0xffffffff) or a sequence number of
-//(0xffffffff-1) when then also want to use locktime;
+/// https://github.com/bitcoin/bips/blob/master/bip-0125.mediawiki
+/// Wallets that don't want to signal replaceability should use either a
+/// max sequence number (0xffffffff) or a sequence number of
+/// (0xffffffff-1) when then also want to use locktime.
 pub const SEQUENCE_ALLOW_NTIMELOCK_NO_RBF: u32 = 0xFFFF_FFFE;
 #[allow(dead_code)]
 pub const SEQUENCE_DISALLOW_NTIMELOCK_NO_RBF: u32 = 0xFFFF_FFFF;
@@ -28,14 +28,15 @@ pub enum Witness {
     PrevScript,
 }
 
-/// In order to properly describe how to unlock an output you need
-/// to know several things:
+/// In order to properly describe how to unlock an output you need to know
+/// several things:
 /// * The witness data (which produces the unlocking script)
 /// * The sequence number (which has to match the `prev_script` in the case of
 ///   CHECKSEQUENCEVERIFY)
 /// * The `prev_script` of the output you're unlocking
-/// This trait may add more things to this list in the future (such as
-/// the locktime the transaction must use to pass CHECKLOCKTIMEVERIFY).
+///
+/// We may add more things to this list in the future (such as the
+/// locktime the transaction must use to pass CHECKLOCKTIMEVERIFY).
 #[derive(Debug, Clone, PartialEq)]
 pub struct UnlockParameters {
     pub witness: Vec<Witness>,

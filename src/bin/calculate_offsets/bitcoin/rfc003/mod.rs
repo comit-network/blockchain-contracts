@@ -65,9 +65,9 @@ impl Contract for BitcoinScript {
 
     fn compile<S: AsRef<OsStr>>(template_folder: S) -> Result<Self, Self::Error> {
         let bytes = compile_contract::compile(Path::new(&template_folder).join("contract.script"))?;
-
         let placeholder_config =
             PlaceholderConfig::from_file(concat_path(&template_folder, "config.json"))?;
+
         Ok(Self {
             bytes,
             placeholder_config,
