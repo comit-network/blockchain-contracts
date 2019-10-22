@@ -1,0 +1,5 @@
+status = ["ci/circleci: beta-test"]
+pr_status = [
+    "ci/circleci: beta-test",
+    "license/cla"
+]
