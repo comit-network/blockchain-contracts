@@ -9,3 +9,10 @@ update_configs:
       - match:
           update_type: "all"
           dependency_type: "direct"
+    ignored_updates:
+      # primitive-types is a transitive dependency of web3, need to update it in lockstep
+      - match:
+          dependency_name: "primitive-types"
+      # rlp is a transitive dependency of web3, need to update it in lockstep
+      - match:
+          dependency_name: "rlp"
