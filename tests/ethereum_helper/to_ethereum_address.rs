@@ -1,4 +1,5 @@
 use rust_bitcoin::secp256k1::PublicKey;
+use tiny_keccak::Hasher;
 use web3::types::Address;
 
 pub trait ToEthereumAddress {
@@ -12,7 +13,12 @@ impl ToEthereumAddress for PublicKey {
         // serialized public key. This is a bitcoin thing that
         // ethereum doesn't want. Eth pubkey should be 32 + 32 = 64 bytes.
         let actual_public_key = &serialized_public_key[1..];
-        let hash = tiny_keccak::keccak256(actual_public_key);
+
+        let mut keccak = tiny_keccak::Keccak::v256();
+        keccak.update(actual_public_key);
+        let mut hash = [0u8; 32];
+        keccak.finalize(&mut hash);
+
         // Ethereum address is the last twenty bytes of the keccak256 hash
         let ethereum_address_bytes = &hash[12..];
         let mut address = Address::default();

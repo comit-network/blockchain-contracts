@@ -1,6 +1,6 @@
 use rlp::{Encodable, RlpStream};
 use std::fmt;
-use tiny_keccak::keccak256;
+use tiny_keccak::Hasher;
 use web3::types::{Address, Bytes, H256, U256};
 
 #[derive(Debug)]
@@ -101,7 +101,10 @@ impl UnsignedTransaction {
             .append(&0u8)
             .as_raw();
 
-        let tx_hash = keccak256(bytes);
+        let mut keccak = tiny_keccak::Keccak::v256();
+        keccak.update(bytes);
+        let mut tx_hash = [0u8; 32];
+        keccak.finalize(&mut tx_hash);
 
         H256(tx_hash)
     }
