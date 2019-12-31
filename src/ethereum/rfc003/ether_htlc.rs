@@ -1,6 +1,6 @@
+use crate::ethereum::Address;
 use crate::{EthereumTimestamp, FitIntoPlaceholderSlice, SecretHash};
 use hex_literal::hex;
-use web3::types::{Address, U256};
 
 // contract template RFC: https://github.com/comit-network/RFCs/blob/master/RFC-007-SWAP-Basic-Ether.md#contract
 pub const CONTRACT_TEMPLATE: [u8;235] = hex!("6100dc61000f6000396100dc6000f336156051576020361415605c57602060006000376020602160206000600060026048f17f1000000000000000000000000000000000000000000000000000000000000001602151141660625760006000f35b42632000000210609f575b60006000f35b7fb8cac300e37f03ad332e581dea21b2f0b84eaaadc184a295fef71e81f44a741360206000a1733000000000000000000000000000000000000003ff5b7f5d26862916391bf49478b2f5103b0720a842b45ef145a268f2cd1fb2aed5517860006000a1734000000000000000000000000000000000000004ff");
@@ -30,12 +30,12 @@ impl EtherHtlc {
         EtherHtlc(contract)
     }
 
-    pub fn deployment_gas_limit(&self) -> U256 {
-        U256::from(121_800)
+    pub fn deployment_gas_limit(&self) -> u64 {
+        121_800
     }
 
-    pub fn tx_gas_limit() -> U256 {
-        U256::from(100_000)
+    pub fn tx_gas_limit() -> u64 {
+        100_000
     }
 }
 
@@ -43,7 +43,6 @@ impl EtherHtlc {
 mod tests {
     use super::*;
     use regex::bytes::Regex;
-    use web3::types::Address;
 
     const SECRET_HASH: [u8; 32] = [
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -56,8 +55,8 @@ mod tests {
     fn compiled_contract_is_same_length_as_template() {
         let htlc = EtherHtlc::new(
             3_000_000,
-            Address::default(),
-            Address::default(),
+            Address([0u8; 20]),
+            Address([0u8; 20]),
             SECRET_HASH,
         );
 
@@ -72,8 +71,8 @@ mod tests {
     fn given_input_data_when_compiled_should_contain_given_data() {
         let htlc = EtherHtlc::new(
             2_000_000_000,
-            Address::default(),
-            Address::default(),
+            Address([0u8; 20]),
+            Address([0u8; 20]),
             SECRET_HASH,
         );
 
