@@ -3,37 +3,11 @@ workflows:
   version: 2
   main:
     jobs:
-      - check-format
-      - beta-build
-      - stable-build
-      - beta-test:
-          requires:
-            - beta-build
-      - stable-test:
-          requires:
-            - stable-build
+      - beta-test
+      - stable-test
 
 jobs:
-  check-format:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "stable"
-    steps:
-      - checkout
-      - install_rust
-      - run:
-          name:  "Install format crates Rust"
-          command: |
-            rustup component add rustfmt
-            cargo install cargo-tomlfmt
-      - run:
-          name: "Git hooks"
-          command: |
-            source $HOME/.cargo/env
-            sh ./.githooks/pre-commit
-  beta-build:
+  stable-test:
     working_directory: ~/workspace
     machine:
       image: ubuntu-1604:201903-01
@@ -46,12 +20,10 @@ jobs:
       - install_sccache
       - restore_sccache_cache
       - run:
-          name: "Beta Build"
+          name: "Beta Build & Test"
           command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo build
+            make ci
       - save_sccache_cache
-      - store_artifacts:
-          path: ./target/
   beta-test:
     working_directory: ~/workspace
     machine:
@@ -62,47 +34,13 @@ jobs:
     steps:
       - checkout
       - install_rust
-      - attach_workspace:
-          at: ./target
-      - run:
-          name: "Beta Test"
-          command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo test
-  stable-build:
-    working_directory: ~/workspace
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "stable"
-    steps:
-      - checkout
-      - install_rust
       - install_sccache
       - restore_sccache_cache
       - run:
-          name: "Stable Build"
+          name: "Stable Build & Test"
           command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo build
+            make ci
       - save_sccache_cache
-      - store_artifacts:
-          path: ./target/
-  stable-test:
-    working_directory: ~/workspace
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "stable"
-    steps:
-      - checkout
-      - install_rust
-      - attach_workspace:
-          at: ./target
-      - run:
-          name: "Stable Test"
-          command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo test
 commands:
   install_rust:
     steps:

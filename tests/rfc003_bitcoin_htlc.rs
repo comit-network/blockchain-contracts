@@ -231,7 +231,7 @@ fn refund_htlc() {
         client.generate(1, None).unwrap();
     }
 
-    let rpc_refund_txid = client.send_raw_transaction(refund_tx_hex.clone()).unwrap();
+    let rpc_refund_txid = client.send_raw_transaction(refund_tx_hex).unwrap();
     client.generate(1, None).unwrap();
 
     assert!(
@@ -266,7 +266,7 @@ fn redeem_htlc_with_long_secret() {
             input_amount,
             unlock_with_custom_size_secret(htlc, secret_key, secret),
         )],
-        output_address: alice_addr.clone(),
+        output_address: alice_addr,
     }
     .sign_with_fee(&crate::ethereum_helper::SECP, fee);
 
@@ -307,7 +307,7 @@ fn redeem_htlc_with_short_secret() {
             input_amount,
             unlock_with_custom_size_secret(htlc, secret_key, secret),
         )],
-        output_address: alice_addr.clone(),
+        output_address: alice_addr,
     }
     .sign_with_fee(&crate::ethereum_helper::SECP, fee);
 

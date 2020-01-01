@@ -83,7 +83,7 @@ pub fn erc20_harness<D: Docker>(
         params.htlc_token_value,
     );
 
-    let tx_id = alice_client.deploy_htlc(erc20_htlc.clone().into(), U256::from(0));
+    let tx_id = alice_client.deploy_htlc(erc20_htlc.into(), U256::from(0));
 
     (
         alice,
