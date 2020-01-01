@@ -48,13 +48,13 @@ impl Erc20Htlc {
 
     /// Constructs the payload to transfer `Erc20` tokens to a `to_address`
     /// Note: `token_quantity` must be BigEndian
-    pub fn transfer_erc20_tx_payload(token_quantity: [u8; 32], to_address: [u8; 20]) -> Vec<u8> {
+    pub fn transfer_erc20_tx_payload(token_quantity: TokenQuantity, to_address: Address) -> Vec<u8> {
         let transfer_fn_abi = hex!("A9059CBB");
 
         let mut data = [0u8; 4 + 32 + 32];
         data[..4].copy_from_slice(&transfer_fn_abi);
-        data[16..36].copy_from_slice(&to_address);
-        data[36..68].copy_from_slice(&token_quantity);
+        data[16..36].copy_from_slice(&to_address.0);
+        data[36..68].copy_from_slice(&token_quantity.0);
 
         data.to_vec()
     }
