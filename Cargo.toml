@@ -21,7 +21,6 @@ rust_bitcoin = { version = "0.19.1", package = "bitcoin" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tiny-keccak = "2.0"
-web3 = { version = "0.8", default-features = false, features = ["http"] }
 
 [dev-dependencies]
 bitcoincore-rpc = "0.8.0-rc1"
@@ -33,6 +32,7 @@ rust-crypto = "0.2"
 spectral = "0.6"
 testcontainers = "0.8"
 tiny-keccak = { version = "2.0", features = ["keccak"] }
+web3 = { version = "0.8", default-features = false, features = ["http"] }
 
 # These versions need to be changed together with web3, depends on what version of primitive-types ships with web3
 [dev-dependencies.primitive-types]
