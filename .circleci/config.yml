@@ -3,117 +3,55 @@ workflows:
   version: 2
   main:
     jobs:
-      - check-format
-      - beta-build
-      - stable-build
-      - beta-test:
-          requires:
-            - beta-build
-      - stable-test:
-          requires:
-            - stable-build
+      - beta-test
+      - stable-test
 
 jobs:
-  check-format:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "stable"
-    steps:
-      - checkout
-      - install_rust
-      - run:
-          name:  "Install format crates Rust"
-          command: |
-            rustup component add rustfmt
-            cargo install cargo-tomlfmt
-      - run:
-          name: "Git hooks"
-          command: |
-            source $HOME/.cargo/env
-            sh ./.githooks/pre-commit
-  beta-build:
-    working_directory: ~/workspace
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "beta"
-    steps:
-      - checkout
-      - install_rust
-      - install_sccache
-      - restore_sccache_cache
-      - run:
-          name: "Beta Build"
-          command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo build
-      - save_sccache_cache
-      - store_artifacts:
-          path: ./target/
-  beta-test:
-    working_directory: ~/workspace
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "beta"
-    steps:
-      - checkout
-      - install_rust
-      - attach_workspace:
-          at: ./target
-      - run:
-          name: "Beta Test"
-          command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo test
-  stable-build:
-    working_directory: ~/workspace
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "stable"
-    steps:
-      - checkout
-      - install_rust
-      - install_sccache
-      - restore_sccache_cache
-      - run:
-          name: "Stable Build"
-          command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo build
-      - save_sccache_cache
-      - store_artifacts:
-          path: ./target/
   stable-test:
     working_directory: ~/workspace
     machine:
       image: ubuntu-1604:201903-01
     environment:
       - RUST_TEST_THREADS: "8"
-      - DEFAULT_TOOLCHAIN: "stable"
+      - RUST_TOOLCHAIN: "beta"
     steps:
       - checkout
       - install_rust
-      - attach_workspace:
-          at: ./target
+      - install_sccache
+      - restore_sccache_cache
       - run:
-          name: "Stable Test"
+          name: "Beta Build & Test"
           command: |
-            rustup run ${DEFAULT_TOOLCHAIN} cargo test
+            make ci
+      - save_sccache_cache
+  beta-test:
+    working_directory: ~/workspace
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      - RUST_TEST_THREADS: "8"
+      - RUST_TOOLCHAIN: "beta"
+    steps:
+      - checkout
+      - install_rust
+      - install_sccache
+      - restore_sccache_cache
+      - run:
+          name: "Stable Build & Test"
+          command: |
+            make ci
+      - save_sccache_cache
 commands:
   install_rust:
     steps:
       - run:
           name: "Install Rust"
           command: |
-            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${DEFAULT_TOOLCHAIN}
+            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${RUST_TOOLCHAIN}
             source $HOME/.cargo/env
             echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
-            rustup run ${DEFAULT_TOOLCHAIN} rustc --version --verbose
-            rustup run ${DEFAULT_TOOLCHAIN} cargo --version --verbose
+            rustup run ${RUST_TOOLCHAIN} rustc --version --verbose
+            rustup run ${RUST_TOOLCHAIN} cargo --version --verbose
   install_sccache:
     steps:
       - run:
@@ -127,7 +65,7 @@ commands:
     steps:
       - restore_cache:
           name: "Restore sccache cache"
-          key: sccache-cache-${DEFAULT_TOOLCHAIN}-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
+          key: sccache-cache-${RUST_TOOLCHAIN}-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
   save_sccache_cache:
     steps:
       - save_cache:
@@ -136,6 +74,6 @@ commands:
           # Of course, restore_cache will not find this exact key,
           # but it will fall back to the closest key (aka the most recent).
           # See https://discuss.circleci.com/t/add-mechanism-to-update-existing-cache-key/9014/13
-          key: sccache-cache-${DEFAULT_TOOLCHAIN}-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
+          key: sccache-cache-${RUST_TOOLCHAIN}-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
           paths:
             - "~/.cache/sccache"
