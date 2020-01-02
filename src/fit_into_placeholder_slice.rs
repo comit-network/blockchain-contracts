@@ -1,6 +1,6 @@
+use crate::ethereum::{Address, TokenQuantity};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use rust_bitcoin::hashes::hash160;
-use web3::types::{Address, U256};
 
 pub trait FitIntoPlaceholderSlice {
     fn fit_into_placeholder_slice(self, buf: &mut [u8]);
@@ -8,13 +8,13 @@ pub trait FitIntoPlaceholderSlice {
 
 impl FitIntoPlaceholderSlice for Address {
     fn fit_into_placeholder_slice(self, buf: &mut [u8]) {
-        buf.copy_from_slice(&self[..]);
+        buf.copy_from_slice(&self.0[..]);
     }
 }
 
 impl FitIntoPlaceholderSlice for TokenQuantity {
     fn fit_into_placeholder_slice(self, buf: &mut [u8]) {
-        self.0.to_big_endian(buf);
+        buf.copy_from_slice(&self.0[..]);
     }
 }
 
@@ -50,6 +50,3 @@ pub struct EthereumTimestamp(pub u32);
 
 #[derive(Debug)]
 pub struct BitcoinTimestamp(pub u32);
-
-#[derive(Debug)]
-pub struct TokenQuantity(pub U256);

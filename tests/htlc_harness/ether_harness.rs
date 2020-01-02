@@ -69,8 +69,8 @@ pub fn ether_harness<D: Docker>(
     let tx_id = alice_client.deploy_htlc(
         EtherHtlc::new(
             params.htlc_refund_timestamp.into(),
-            alice,
-            bob,
+            blockchain_contracts::ethereum::Address(alice.into()),
+            blockchain_contracts::ethereum::Address(bob.into()),
             params.htlc_secret_hash,
         )
         .into(),

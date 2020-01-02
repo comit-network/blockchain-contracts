@@ -4,6 +4,7 @@ use crate::{
     parity_client::ParityClient,
 };
 use blockchain_contracts::ethereum::rfc003::Erc20Htlc;
+use blockchain_contracts::ethereum::TokenQuantity;
 use std::sync::Arc;
 use testcontainers::{images::parity_parity::ParityEthereum, Container, Docker};
 use web3::{
@@ -76,11 +77,11 @@ pub fn erc20_harness<D: Docker>(
 
     let erc20_htlc = Erc20Htlc::new(
         params.htlc_refund_timestamp.into(),
-        alice,
-        bob,
+        blockchain_contracts::ethereum::Address(alice.into()),
+        blockchain_contracts::ethereum::Address(bob.into()),
         params.htlc_secret_hash,
-        token_contract,
-        params.htlc_token_value,
+        blockchain_contracts::ethereum::Address(token_contract.into()),
+        TokenQuantity(params.htlc_token_value.into()),
     );
 
     let tx_id = alice_client.deploy_htlc(erc20_htlc.into(), U256::from(0));
