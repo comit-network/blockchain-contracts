@@ -1,8 +1,8 @@
 RUSTUP = rustup
 
-# The CI should pass a DEFAULT_TOOLCHAIN env var, if not we default to stable
-DEFAULT_TOOLCHAIN ?= stable
-TOOLCHAIN = $(DEFAULT_TOOLCHAIN)
+# The CI should pass a RUST_TOOLCHAIN env var, if not we default to stable
+RUST_TOOLCHAIN ?= stable
+TOOLCHAIN = $(RUST_TOOLCHAIN)
 CARGO = $(RUSTUP) run --install $(TOOLCHAIN) cargo --color always
 
 NIGHTLY_TOOLCHAIN = nightly-2019-12-30
