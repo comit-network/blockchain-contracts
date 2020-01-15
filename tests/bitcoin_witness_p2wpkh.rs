@@ -1,7 +1,6 @@
 pub mod bitcoin_helper;
 
 use bitcoin_helper::{new_tc_bitcoincore_client, RegtestHelperClient};
-use bitcoincore_rpc::RpcApi;
 use blockchain_contracts::bitcoin::witness::{PrimedInput, PrimedTransaction, UnlockP2wpkh};
 use rust_bitcoin::{
     consensus::encode::serialize_hex,
@@ -27,7 +26,7 @@ fn redeem_single_p2wpkh() {
     let public_key = secp256k1::PublicKey::from_secret_key(&secp, &private_key.key);
     let (_, outpoint) = client.create_p2wpkh_vout_at(public_key, input_amount);
 
-    let alice_addr: Address = client.get_new_address(None, None).unwrap();
+    let alice_addr: Address = client.get_new_address().unwrap();
 
     let fee = Amount::from_sat(1000);
 
@@ -45,7 +44,7 @@ fn redeem_single_p2wpkh() {
 
     let rpc_redeem_txid = client.send_raw_transaction(redeem_tx_hex).unwrap();
 
-    client.generate(1, None).unwrap();
+    client.generate(1).unwrap();
 
     let actual_amount = client
         .find_utxo_at_tx_for_address(&rpc_redeem_txid, &alice_addr)
@@ -79,7 +78,7 @@ fn redeem_two_p2wpkh() {
     let (_, vout_1) = client.create_p2wpkh_vout_at(public_key_1, input_amount);
     let (_, vout_2) = client.create_p2wpkh_vout_at(public_key_2, input_amount);
 
-    let alice_addr: Address = client.get_new_address(None, None).unwrap();
+    let alice_addr: Address = client.get_new_address().unwrap();
 
     let fee = Amount::from_sat(1000);
 
@@ -104,7 +103,7 @@ fn redeem_two_p2wpkh() {
 
     let rpc_redeem_txid = client.send_raw_transaction(redeem_tx_hex).unwrap();
 
-    client.generate(1, None).unwrap();
+    client.generate(1).unwrap();
 
     let actual_amount = client
         .find_utxo_at_tx_for_address(&rpc_redeem_txid, &alice_addr)

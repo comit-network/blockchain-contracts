@@ -96,6 +96,10 @@ ifneq (,$(STAGED_TOML_FILES))
 	$(CARGO) tomlfmt -p Cargo.toml
 endif
 
+force_format: install_rustfmt install_tomlfmt
+	$(CARGO_NIGHTLY) fmt
+	$(CARGO) tomlfmt -p Cargo.toml
+
 check_rust_format: install_rustfmt
 ifneq (,$(STAGED_RUST_FILES))
 	$(CARGO_NIGHTLY) fmt -- --check
