@@ -13,7 +13,7 @@ jobs:
       image: ubuntu-1604:201903-01
     environment:
       - RUST_TEST_THREADS: "8"
-      - RUST_TOOLCHAIN: "beta"
+      - RUST_TOOLCHAIN: "stable"
     steps:
       - checkout
       - install_rust
