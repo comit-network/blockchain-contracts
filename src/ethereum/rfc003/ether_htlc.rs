@@ -3,7 +3,7 @@ use crate::{EthereumTimestamp, FitIntoPlaceholderSlice, SecretHash};
 use hex_literal::hex;
 
 // contract template RFC: https://github.com/comit-network/RFCs/blob/master/RFC-007-SWAP-Basic-Ether.md#contract
-pub const CONTRACT_TEMPLATE: [u8;235] = hex!("6100dc61000f6000396100dc6000f336156051576020361415605c57602060006000376020602160206000600060026048f17f1000000000000000000000000000000000000000000000000000000000000001602151141660625760006000f35b42632000000210609f575b60006000f35b7fb8cac300e37f03ad332e581dea21b2f0b84eaaadc184a295fef71e81f44a741360206000a1733000000000000000000000000000000000000003ff5b7f5d26862916391bf49478b2f5103b0720a842b45ef145a268f2cd1fb2aed5517860006000a1734000000000000000000000000000000000000004ff");
+pub const CONTRACT_TEMPLATE: [u8;315] = hex!("61012c61000f60003961012c6000f3361561007a5760203614156100ac57602060006000376020602160206000600060026048f17f100000000000000000000000000000000000000000000000000000000000000160215114166100b2577f05f03ebf077f616c9d02b91c7fcbac32beef85527aedff9cf81357a5a00c8c4160006000a160006000f35b426320000002106100ef577fbbad9d5bf43fc68b6ab3d56342306bfc459abe19dd1d361dbcab75c00400b85c60006000a15b60006000f35b7fb8cac300e37f03ad332e581dea21b2f0b84eaaadc184a295fef71e81f44a741360206000a1733000000000000000000000000000000000000003ff5b7f5d26862916391bf49478b2f5103b0720a842b45ef145a268f2cd1fb2aed5517860006000a1734000000000000000000000000000000000000004ff");
 
 #[derive(Debug)]
 pub struct EtherHtlc(Vec<u8>);
@@ -22,10 +22,10 @@ impl EtherHtlc {
         secret_hash: [u8; 32],
     ) -> Self {
         let mut contract = CONTRACT_TEMPLATE.to_vec();
-        EthereumTimestamp(expiry).fit_into_placeholder_slice(&mut contract[99..103]);
-        refund_identity.fit_into_placeholder_slice(&mut contract[214..234]);
-        redeem_identity.fit_into_placeholder_slice(&mut contract[153..173]);
-        SecretHash(secret_hash).fit_into_placeholder_slice(&mut contract[51..83]);
+        EthereumTimestamp(expiry).fit_into_placeholder_slice(&mut contract[140..144]);
+        refund_identity.fit_into_placeholder_slice(&mut contract[294..314]);
+        redeem_identity.fit_into_placeholder_slice(&mut contract[233..253]);
+        SecretHash(secret_hash).fit_into_placeholder_slice(&mut contract[53..85]);
 
         EtherHtlc(contract)
     }
