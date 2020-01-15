@@ -267,7 +267,6 @@ fn redeem_htlc_with_long_secret() {
 
     let error = assert_that(&rpc_redeem_txid).is_err().subject;
 
-    // Can't access the type `RpcError`: https://github.com/rust-bitcoin/rust-bitcoincore-rpc/issues/50
     assert_eq!(
         format!("{:?}", error),
         "JsonRpc(Rpc(RpcError { code: -26, message: \"non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)\", data: None }))"

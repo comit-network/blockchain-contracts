@@ -22,10 +22,23 @@ struct JsonRpcRequest<T> {
 
 #[derive(Debug, Deserialize)]
 struct JsonRpcResponse<R> {
-    result: R,
-    id: String,
-    //error: Option<Error>
+    result: Option<R>,
+    error: Option<RpcError>,
 }
+
+#[derive(Debug, Deserialize)]
+struct RpcError {
+    code: i32,
+    message: String,
+}
+
+impl std::fmt::Display for RpcError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for RpcError {}
 
 impl<T> JsonRpcRequest<T> {
     fn new(method: &str, params: T) -> Self {
@@ -80,16 +93,27 @@ impl Client {
         Client { endpoint, auth }
     }
 
-    pub fn get_new_address(&self) -> Result<Address, Error> {
+    pub fn get_new_address(&self) -> anyhow::Result<Address> {
         let request = JsonRpcRequest::<Vec<()>>::new("getnewaddress", Vec::new());
 
-        let response: JsonRpcResponse<Address> = reqwest::blocking::Client::new()
+        let response = reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
             .json()?;
-        Ok(response.result)
+
+        match response {
+            JsonRpcResponse {
+                result: None,
+                error: Some(error),
+            } => Err(anyhow::Error::new(error)),
+            JsonRpcResponse {
+                result: Some(result),
+                error: None,
+            } => Ok(result),
+            _ => Err(anyhow::Error::msg(".result and .error were null")),
+        }
     }
 
     pub fn generate(&self, num: u32) -> anyhow::Result<()> {
@@ -107,14 +131,23 @@ impl Client {
     pub fn send_raw_transaction(&self, hex: String) -> anyhow::Result<sha256d::Hash> {
         let request = JsonRpcRequest::new("sendrawtransaction", vec![serialize(hex)?]);
 
-        let response: JsonRpcResponse<sha256d::Hash> = reqwest::blocking::Client::new()
+        let response = reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
             .json()?;
-
-        Ok(response.result)
+        match response {
+            JsonRpcResponse {
+                result: None,
+                error: Some(error),
+            } => Err(anyhow::Error::new(error)),
+            JsonRpcResponse {
+                result: Some(result),
+                error: None,
+            } => Ok(result),
+            _ => Err(anyhow::Error::msg(".result and .error were null")),
+        }
     }
 
     pub fn get_raw_transaction(&self, txid: &sha256d::Hash) -> anyhow::Result<Transaction> {
@@ -127,20 +160,40 @@ impl Client {
             .send()?
             .json()?;
 
-        let hex = hex_bytes(&response.result)?;
-        Ok(deserialize(&hex)?)
+        match response {
+            JsonRpcResponse {
+                result: None,
+                error: Some(error),
+            } => Err(anyhow::Error::new(error)),
+            JsonRpcResponse {
+                result: Some(result),
+                error: None,
+            } => Ok(deserialize(&hex_bytes(&result)?)?),
+            _ => Err(anyhow::Error::msg(".result and .error were null")),
+        }
     }
 
-    pub fn get_blockchain_info(&self) -> Result<BlockchainInfo, Error> {
+    pub fn get_blockchain_info(&self) -> anyhow::Result<BlockchainInfo> {
         let request = JsonRpcRequest::<Vec<()>>::new("getblockchaininfo", vec![]);
 
-        let response: JsonRpcResponse<BlockchainInfo> = reqwest::blocking::Client::new()
+        let response = reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
             .json()?;
-        Ok(response.result)
+
+        match response {
+            JsonRpcResponse {
+                result: None,
+                error: Some(error),
+            } => Err(anyhow::Error::new(error)),
+            JsonRpcResponse {
+                result: Some(result),
+                error: None,
+            } => Ok(result),
+            _ => Err(anyhow::Error::msg(".result and .error were null")),
+        }
     }
 
     pub fn list_unspent(
@@ -160,13 +213,23 @@ impl Client {
             ],
         );
 
-        let response: JsonRpcResponse<Vec<Unspent>> = reqwest::blocking::Client::new()
+        let response = reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
             .json()?;
-        Ok(response.result)
+        match response {
+            JsonRpcResponse {
+                result: None,
+                error: Some(error),
+            } => Err(anyhow::Error::new(error)),
+            JsonRpcResponse {
+                result: Some(result),
+                error: None,
+            } => Ok(result),
+            _ => Err(anyhow::Error::msg(".result and .error were null")),
+        }
     }
 
     pub fn send_to_address(
@@ -179,13 +242,23 @@ impl Client {
             vec![serialize(address)?, serialize(amount.as_btc())?],
         );
 
-        let response: JsonRpcResponse<sha256d::Hash> = reqwest::blocking::Client::new()
+        let response = reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
             .json()?;
-        Ok(response.result)
+        match response {
+            JsonRpcResponse {
+                result: None,
+                error: Some(error),
+            } => Err(anyhow::Error::new(error)),
+            JsonRpcResponse {
+                result: Some(result),
+                error: None,
+            } => Ok(result),
+            _ => Err(anyhow::Error::msg(".result and .error were null")),
+        }
     }
 }
 
