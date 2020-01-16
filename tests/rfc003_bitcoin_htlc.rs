@@ -6,12 +6,12 @@ pub mod ethereum_helper;
 pub mod htlc_harness;
 pub mod parity_client;
 
+use crate::bitcoin_helper::RpcError;
 use crate::{
-    bitcoin_helper::RegtestHelperClient,
+    bitcoin_helper::Client,
     htlc_harness::{CustomSizeSecret, Timestamp, SECRET, SECRET_HASH},
 };
 use bitcoin_helper::new_tc_bitcoincore_client;
-use bitcoincore_rpc::RpcApi;
 use blockchain_contracts::bitcoin::{
     rfc003::bitcoin_htlc::BitcoinHtlc,
     witness::{PrimedInput, PrimedTransaction, UnlockParameters, Witness},
@@ -79,7 +79,7 @@ fn pubkey_hash<C: secp256k1::Signing>(
 }
 
 fn fund_htlc(
-    client: &bitcoincore_rpc::Client,
+    client: &Client,
     secret_hash: [u8; 32],
 ) -> (
     sha256d::Hash,
@@ -117,19 +117,10 @@ fn fund_htlc(
     let htlc_address = htlc.compute_address(Network::Regtest);
 
     let txid = client
-        .send_to_address(
-            &htlc_address.clone(),
-            amount,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
+        .send_to_address(&htlc_address.clone(), amount)
         .unwrap();
 
-    client.generate(1, None).unwrap();
+    client.generate(1).unwrap();
 
     let vout = client.find_vout_for_address(&txid, &htlc_address);
 
@@ -151,11 +142,11 @@ fn redeem_htlc_with_secret() {
 
     let container = docker.run(BitcoinCore::default());
     let client = new_tc_bitcoincore_client(&container);
-    client.generate(101, None).unwrap();
+    client.generate(101).unwrap();
 
     let (_, vout, input_amount, htlc, _, secret_key, _) = fund_htlc(&client, SECRET_HASH);
 
-    let alice_addr: Address = client.get_new_address(None, None).unwrap();
+    let alice_addr: Address = client.get_new_address().unwrap();
 
     let fee = Amount::from_sat(1000);
 
@@ -173,7 +164,7 @@ fn redeem_htlc_with_secret() {
 
     let rpc_redeem_txid = client.send_raw_transaction(redeem_tx_hex).unwrap();
 
-    client.generate(1, None).unwrap();
+    client.generate(1).unwrap();
 
     assert!(
         client
@@ -190,12 +181,12 @@ fn refund_htlc() {
 
     let container = docker.run(BitcoinCore::default());
     let client = new_tc_bitcoincore_client(&container);
-    client.generate(101, None).unwrap();
+    client.generate(101).unwrap();
 
     let (_, vout, input_amount, htlc, refund_timestamp, _, secret_key) =
         fund_htlc(&client, SECRET_HASH);
 
-    let alice_addr: Address = client.get_new_address(None, None).unwrap();
+    let alice_addr: Address = client.get_new_address().unwrap();
     let fee = Amount::from_sat(1000);
 
     let refund_tx = PrimedTransaction {
@@ -214,11 +205,16 @@ fn refund_htlc() {
         .send_raw_transaction(refund_tx_hex.clone())
         .unwrap_err();
 
-    // Can't access the type `RpcError`: https://github.com/rust-bitcoin/rust-bitcoincore-rpc/issues/50
-    assert_eq!(
-        format!("{:?}", error),
-        "JsonRpc(Rpc(RpcError { code: -26, message: \"non-final (code 64)\", data: None }))"
-    );
+    match error {
+        bitcoin_helper::Error::Rpc(error) => assert_eq!(
+            error,
+            RpcError {
+                code: -26,
+                message: "non-final (code 64)".to_string()
+            }
+        ),
+        _ => panic!(format!("Unexpected error received: {:?}", error)),
+    }
 
     loop {
         let time = client.get_blockchain_info().unwrap().mediantime;
@@ -228,11 +224,11 @@ fn refund_htlc() {
         }
 
         sleep(Duration::from_millis(2000));
-        client.generate(1, None).unwrap();
+        client.generate(1).unwrap();
     }
 
     let rpc_refund_txid = client.send_raw_transaction(refund_tx_hex).unwrap();
-    client.generate(1, None).unwrap();
+    client.generate(1).unwrap();
 
     assert!(
         client
@@ -249,14 +245,14 @@ fn redeem_htlc_with_long_secret() {
 
     let container = docker.run(BitcoinCore::default());
     let client = new_tc_bitcoincore_client(&container);
-    client.generate(101, None).unwrap();
+    client.generate(101).unwrap();
 
     let secret = CustomSizeSecret::from_str("Grandmother, what big secret you have!").unwrap();
     assert_eq!(secret.0.len(), 38);
 
     let (_, vout, input_amount, htlc, _, secret_key, _) = fund_htlc(&client, secret.hash());
 
-    let alice_addr: Address = client.get_new_address(None, None).unwrap();
+    let alice_addr: Address = client.get_new_address().unwrap();
 
     let fee = Amount::from_sat(1000);
 
@@ -276,11 +272,16 @@ fn redeem_htlc_with_long_secret() {
 
     let error = assert_that(&rpc_redeem_txid).is_err().subject;
 
-    // Can't access the type `RpcError`: https://github.com/rust-bitcoin/rust-bitcoincore-rpc/issues/50
-    assert_eq!(
-        format!("{:?}", error),
-        "JsonRpc(Rpc(RpcError { code: -26, message: \"non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)\", data: None }))"
-    );
+    match error {
+        bitcoin_helper::Error::Rpc(error) => assert_eq!(
+            *error,
+            RpcError {
+                code: -26,
+                message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
+            }
+        ),
+        _ => panic!(format!("Unexpected error received: {:?}", error)),
+    }
 }
 
 #[test]
@@ -290,14 +291,14 @@ fn redeem_htlc_with_short_secret() {
 
     let container = docker.run(BitcoinCore::default());
     let client = new_tc_bitcoincore_client(&container);
-    client.generate(101, None).unwrap();
+    client.generate(101).unwrap();
 
     let secret = CustomSizeSecret::from_str("teeny-weeny-bunny").unwrap();
     assert_eq!(secret.0.len(), 17);
 
     let (_, vout, input_amount, htlc, _, secret_key, _) = fund_htlc(&client, secret.hash());
 
-    let alice_addr: Address = client.get_new_address(None, None).unwrap();
+    let alice_addr: Address = client.get_new_address().unwrap();
 
     let fee = Amount::from_sat(1000);
 
@@ -317,9 +318,14 @@ fn redeem_htlc_with_short_secret() {
 
     let error = assert_that(&rpc_redeem_txid).is_err().subject;
 
-    // Can't access the type `RpcError`: https://github.com/rust-bitcoin/rust-bitcoincore-rpc/issues/50
-    assert_eq!(
-        format!("{:?}", error),
-        "JsonRpc(Rpc(RpcError { code: -26, message: \"non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)\", data: None }))"
-    );
+    match error {
+        bitcoin_helper::Error::Rpc(error) => assert_eq!(
+            *error,
+            RpcError {
+                code: -26,
+                message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
+            }
+        ),
+        _ => panic!(format!("Unexpected error received: {:?}", error)),
+    }
 }

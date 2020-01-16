@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: instruct bors to merge dependabot PRs with passing tests
     conditions:
-      - "status-success=ci (1.37.0)"
+      - "status-success=ci (1.39.0)"
       - "status-success=ci (stable)"
       - "author:dependabot-preview[bot]"
     actions:
@@ -9,7 +9,7 @@ pull_request_rules:
         message: "bors r+"
   - name: instruct bors to merge PRs with passing tests and 2 approvals
     conditions:
-      - "status-success=ci (1.37.0)"
+      - "status-success=ci (1.39.0)"
       - "status-success=ci (stable)"
       - "status-success=license/cla"
       - "#approved-reviews-by>=2"

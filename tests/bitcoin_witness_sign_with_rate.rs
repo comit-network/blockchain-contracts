@@ -1,8 +1,6 @@
 pub mod bitcoin_helper;
 
 use crate::bitcoin_helper::new_tc_bitcoincore_client;
-use bitcoin_helper::RegtestHelperClient;
-use bitcoincore_rpc::RpcApi;
 use blockchain_contracts::bitcoin::witness::{PrimedInput, PrimedTransaction, UnlockP2wpkh};
 use rust_bitcoin::{
     consensus::encode::serialize_hex,
@@ -29,7 +27,7 @@ fn sign_with_rate() {
 
     let (_, outpoint) = client.create_p2wpkh_vout_at(public_key, input_amount);
 
-    let alice_addr: Address = client.get_new_address(None, None).unwrap();
+    let alice_addr: Address = client.get_new_address().unwrap();
 
     let rate = 42;
 
@@ -48,7 +46,7 @@ fn sign_with_rate() {
 
     let rpc_redeem_txid = client.send_raw_transaction(redeem_tx_hex).unwrap();
 
-    client.generate(1, None).unwrap();
+    client.generate(1).unwrap();
 
     assert!(client
         .find_utxo_at_tx_for_address(&rpc_redeem_txid, &alice_addr)
