@@ -323,7 +323,11 @@ fn given_htlc_and_redeem_should_emit_redeem_log_msg_with_secret() {
 
     // Send incorrect secret to contract
     let transaction_receipt = client.send_data(htlc_address, Some(Bytes(b"I'm a h4x0r".to_vec())));
-    assert_that(&transaction_receipt.logs).has_length(0);
+    assert_that(&transaction_receipt.logs).has_length(1);
+    let topic: H256 = WRONGSECRET_LOG_MSG.parse().unwrap();
+    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
+    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
+    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
 
     // Send correct secret to contract
     let transaction_receipt = client.send_data(htlc_address, Some(Bytes(SECRET.to_vec())));

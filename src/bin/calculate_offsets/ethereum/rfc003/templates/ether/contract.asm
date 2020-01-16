@@ -45,6 +45,7 @@
     redeem
     jumpi
 
+    // Jump to invalid secret if no match
     invalid_secret
     jump
 

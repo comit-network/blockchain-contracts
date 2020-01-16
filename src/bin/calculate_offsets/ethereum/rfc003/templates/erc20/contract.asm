@@ -20,7 +20,7 @@
     iszero
 
     // If passed secret is wrong size, jump to exit contract
-    exit
+    invalid_secret
     jumpi
 
     // Load secret into memory
@@ -45,11 +45,9 @@
     redeem
     jumpi
 
-    // log keccak256(WrongSecret)
-    log1(0, 0, 0x05F03EBF077F616C9D02B91C7FCBAC32BEEF85527AEDFF9CF81357A5A00C8C41)
-
-    // Exit if hashes don't match
-    return(0, 0)
+    // Jump to invalid secret if no match
+    invalid_secret
+    jump
 
 check_expiry:
     // Timestamp of the current block in seconds since the epoch
@@ -69,8 +67,11 @@ check_expiry:
     log1(0, 0, 0xBBAD9D5BF43FC68B6AB3D56342306BFC459ABE19DD1D361DBCAB75C00400B85C)
     return(0, 0)
 
-exit:
-    // Exit
+invalid_secret:
+    // log keccak256(WrongSecret)
+    log1(0, 0, 0x05F03EBF077F616C9D02B91C7FCBAC32BEEF85527AEDFF9CF81357A5A00C8C41)
+
+    // Exit if hashes don't match
     return(0, 0)
 
 /*
