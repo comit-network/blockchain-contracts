@@ -6,6 +6,7 @@ pub mod ethereum_helper;
 pub mod htlc_harness;
 pub mod parity_client;
 
+use crate::bitcoin_helper::RpcError;
 use crate::{
     bitcoin_helper::Client,
     htlc_harness::{CustomSizeSecret, Timestamp, SECRET, SECRET_HASH},
@@ -204,10 +205,16 @@ fn refund_htlc() {
         .send_raw_transaction(refund_tx_hex.clone())
         .unwrap_err();
 
-    assert_eq!(
-        format!("{:?}", error),
-        "Rpc(RpcError { code: -26, message: \"non-final (code 64)\" })".to_string()
-    );
+    match error {
+        bitcoin_helper::Error::Rpc(error) => assert_eq!(
+            error,
+            RpcError {
+                code: -26,
+                message: "non-final (code 64)".to_string()
+            }
+        ),
+        _ => panic!(format!("Unexpected error received: {:?}", error)),
+    }
 
     loop {
         let time = client.get_blockchain_info().unwrap().mediantime;
@@ -265,10 +272,16 @@ fn redeem_htlc_with_long_secret() {
 
     let error = assert_that(&rpc_redeem_txid).is_err().subject;
 
-    assert_eq!(
-        format!("{:?}", error),
-        "Rpc(RpcError { code: -26, message: \"non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)\" })"
-    );
+    match error {
+        bitcoin_helper::Error::Rpc(error) => assert_eq!(
+            *error,
+            RpcError {
+                code: -26,
+                message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
+            }
+        ),
+        _ => panic!(format!("Unexpected error received: {:?}", error)),
+    }
 }
 
 #[test]
@@ -305,8 +318,14 @@ fn redeem_htlc_with_short_secret() {
 
     let error = assert_that(&rpc_redeem_txid).is_err().subject;
 
-    assert_eq!(
-        format!("{:?}", error),
-        "Rpc(RpcError { code: -26, message: \"non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)\" })"
-    );
+    match error {
+        bitcoin_helper::Error::Rpc(error) => assert_eq!(
+            *error,
+            RpcError {
+                code: -26,
+                message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
+            }
+        ),
+        _ => panic!(format!("Unexpected error received: {:?}", error)),
+    }
 }

@@ -27,8 +27,8 @@ struct JsonRpcResponse<R> {
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct RpcError {
-    code: i32,
-    message: String,
+    pub code: i32,
+    pub message: String,
 }
 
 impl std::fmt::Display for RpcError {
