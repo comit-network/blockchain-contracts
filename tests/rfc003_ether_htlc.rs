@@ -69,7 +69,10 @@ fn given_deployed_htlc_when_refunded_after_expiry_time_then_money_is_refunded() 
 #[test]
 fn given_deployed_htlc_when_refunded_too_early_emits_log() {
     let docker = Cli::default();
-    let harness_params = EtherHarnessParams::default();
+    let harness_params = EtherHarnessParams {
+        htlc_refund_timestamp: Timestamp::now().plus(1_000_000),
+        ..Default::default()
+    };
     let (_alice, bob, htlc, client, _handle, _container) =
         ether_harness(&docker, harness_params.clone());
 

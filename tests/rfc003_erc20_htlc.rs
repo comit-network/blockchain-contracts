@@ -23,6 +23,11 @@ use web3::types::{Bytes, H256, U256};
 const REDEEMED_LOG_MSG: &str = "B8CAC300E37F03AD332E581DEA21B2F0B84EAAADC184A295FEF71E81F44A7413";
 // keccak256(Refunded())
 const REFUNDED_LOG_MSG: &str = "5D26862916391BF49478B2F5103B0720A842B45EF145A268F2CD1FB2AED55178";
+// keccak256(TooEarly) no `()`
+const TOOEARLY_LOG_MSG: &str = "BBAD9D5BF43FC68B6AB3D56342306BFC459ABE19DD1D361DBCAB75C00400B85C";
+// keccak256(WrongSecret) no `()`
+const WRONGSECRET_LOG_MSG: &str =
+    "05F03EBF077F616C9D02B91C7FCBAC32BEEF85527AEDFF9CF81357A5A00C8C41";
 
 #[test]
 fn given_erc20_token_should_deploy_erc20_htlc_and_fund_htlc() {
@@ -221,7 +226,7 @@ fn given_deployed_erc20_htlc_when_expiry_time_not_yet_reached_and_wrong_secret_t
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
 
     // Don't wait for the timeout and don't send a secret
-    client.send_data(htlc_address, None);
+    let transaction_receipt = client.send_data(htlc_address, None);
 
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
@@ -232,6 +237,13 @@ fn given_deployed_erc20_htlc_when_expiry_time_not_yet_reached_and_wrong_secret_t
         client.token_balance_of(token_contract, alice),
         U256::from(600)
     );
+
+    // Check log was emitted
+    assert_that(&transaction_receipt.logs).has_length(1);
+    let topic: H256 = TOOEARLY_LOG_MSG.parse().unwrap();
+    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
+    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
+    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
 }
 
 #[test]
@@ -552,4 +564,59 @@ fn given_short_zero_secret_htlc_should_not_redeem() {
         U256::from(600)
     );
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
+}
+
+#[test]
+fn given_invalid_secret_htlc_should_not_redeem_and_print_log() {
+    let docker = Cli::default();
+    let secret_vec = vec![
+        0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+        0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+    ];
+
+    let (alice, bob, htlc_address, token_contract, token_amount, client, _handle, _container) =
+        erc20_harness(&docker, Erc20HarnessParams::default());
+
+    // Fund erc20 htlc
+    client.sign_and_send(|nonce, gas_price| UnsignedTransaction {
+        nonce,
+        gas_price,
+        gas_limit: U256::from(100_000),
+        to: Some(token_contract),
+        value: U256::from(0),
+        data: Some(
+            Erc20Htlc::transfer_erc20_tx_payload(
+                TokenQuantity(token_amount.into()),
+                Address(htlc_address.into()),
+            )
+            .into(),
+        ),
+    });
+
+    assert_eq!(
+        client.token_balance_of(token_contract, htlc_address),
+        U256::from(400)
+    );
+    assert_eq!(
+        client.token_balance_of(token_contract, alice),
+        U256::from(600)
+    );
+    assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
+
+    // Send short secret to contract
+    let transaction_receipt = client.send_data(htlc_address, Some(Bytes(secret_vec)));
+
+    assert_eq!(
+        client.token_balance_of(token_contract, htlc_address),
+        U256::from(400)
+    );
+    assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
+    assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
+
+    // Check log was emitted
+    assert_that(&transaction_receipt.logs).has_length(1);
+    let topic: H256 = WRONGSECRET_LOG_MSG.parse().unwrap();
+    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
+    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
+    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
 }

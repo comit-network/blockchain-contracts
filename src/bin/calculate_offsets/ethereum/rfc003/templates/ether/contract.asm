@@ -45,7 +45,6 @@
     redeem
     jumpi
 
-
     // log keccak256(WrongSecret)
     log1(0, 0, 0x05F03EBF077F616C9D02B91C7FCBAC32BEEF85527AEDFF9CF81357A5A00C8C41)
 
