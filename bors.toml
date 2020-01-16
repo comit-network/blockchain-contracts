@@ -1,5 +1,4 @@
-status = ["ci/circleci: stable-test"]
+status = ["ci (1.37.0)", "ci (stable)"]
 pr_status = [
-    "ci/circleci: stable-test",
     "license/cla"
 ]

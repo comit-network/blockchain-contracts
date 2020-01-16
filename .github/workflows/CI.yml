@@ -1,0 +1,55 @@
+on:
+  push:
+    branches-ignore:
+      - 'staging.tmp'
+      - 'trying.tmp'
+
+name: CI
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [
+          1.37.0, # MSRV
+          stable,
+          beta,
+          nightly
+        ]
+      fail-fast: false
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      - name: Install rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: clippy
+
+      - name: Install rust for rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2019-12-30 # this should match the version used in the makefile
+          override: true
+          components: rustfmt
+
+      - name: Cache ~/.cargo/bin directory
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/bin
+          key: ubuntu-rust-nightly-2019-12-30-cargo-bin-directory
+
+      - name: Cache target directory
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ubuntu-rust-${{ matrix.rust }}-target-directory
+
+      - run: make ci
+        env:
+          RUST_TOOLCHAIN: ${{ matrix.rust }}
