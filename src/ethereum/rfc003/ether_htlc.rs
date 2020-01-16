@@ -3,7 +3,7 @@ use crate::{EthereumTimestamp, FitIntoPlaceholderSlice, SecretHash};
 use hex_literal::hex;
 
 // contract template RFC: https://github.com/comit-network/RFCs/blob/master/RFC-007-SWAP-Basic-Ether.md#contract
-pub const CONTRACT_TEMPLATE: [u8;320] = hex!("61013161000f6000396101316000f3361561007a5760203614156100b157602060006000376020602160206000600060026048f17f100000000000000000000000000000000000000000000000000000000000000160215114166100b7577f05f03ebf077f616c9d02b91c7fcbac32beef85527aedff9cf81357a5a00c8c4160006000a160006000f35b426320000002106100f4577fbbad9d5bf43fc68b6ab3d56342306bfc459abe19dd1d361dbcab75c00400b85c60006000a160006000f35b60006000f35b7fb8cac300e37f03ad332e581dea21b2f0b84eaaadc184a295fef71e81f44a741360206000a1733000000000000000000000000000000000000003ff5b7f5d26862916391bf49478b2f5103b0720a842b45ef145a268f2cd1fb2aed5517860006000a1734000000000000000000000000000000000000004ff");
+pub const CONTRACT_TEMPLATE: [u8;319] = hex!("61013061000f6000396101306000f3361561005357602036141561008a57602060006000376020602160206000600060026048f17f100000000000000000000000000000000000000000000000000000000000000160215114166100b65761008a565b426320000002106100f3577fbbad9d5bf43fc68b6ab3d56342306bfc459abe19dd1d361dbcab75c00400b85c60006000a160006000f35b7f05f03ebf077f616c9d02b91c7fcbac32beef85527aedff9cf81357a5a00c8c4160006000a160006000f35b7fb8cac300e37f03ad332e581dea21b2f0b84eaaadc184a295fef71e81f44a741360206000a1733000000000000000000000000000000000000003ff5b7f5d26862916391bf49478b2f5103b0720a842b45ef145a268f2cd1fb2aed5517860006000a1734000000000000000000000000000000000000004ff");
 
 #[derive(Debug)]
 pub struct EtherHtlc(Vec<u8>);
@@ -22,9 +22,9 @@ impl EtherHtlc {
         secret_hash: [u8; 32],
     ) -> Self {
         let mut contract = CONTRACT_TEMPLATE.to_vec();
-        EthereumTimestamp(expiry).fit_into_placeholder_slice(&mut contract[140..144]);
-        refund_identity.fit_into_placeholder_slice(&mut contract[299..319]);
-        redeem_identity.fit_into_placeholder_slice(&mut contract[238..258]);
+        EthereumTimestamp(expiry).fit_into_placeholder_slice(&mut contract[101..105]);
+        refund_identity.fit_into_placeholder_slice(&mut contract[298..318]);
+        redeem_identity.fit_into_placeholder_slice(&mut contract[237..257]);
         SecretHash(secret_hash).fit_into_placeholder_slice(&mut contract[53..85]);
 
         EtherHtlc(contract)

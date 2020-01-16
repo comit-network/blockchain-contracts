@@ -6,7 +6,7 @@ pub mod htlc_harness;
 pub mod parity_client;
 
 use crate::htlc_harness::{
-    ether_harness, sleep_until, CustomSizeSecret, EtherHarnessParams, SECRET,
+    ether_harness, sleep_until, CustomSizeSecret, EtherHarnessParams, Timestamp, SECRET,
 };
 use spectral::prelude::*;
 use testcontainers::clients::Cli;
@@ -108,7 +108,12 @@ fn given_htlc_and_redeem_should_emit_redeem_log_msg_with_secret() {
 
     // Send incorrect secret to contract
     let transaction_receipt = client.send_data(htlc, Some(Bytes(b"I'm a h4x0r".to_vec())));
-    assert_that(&transaction_receipt.logs).has_length(0);
+    // Check log was emitted
+    assert_that(&transaction_receipt.logs).has_length(1);
+    let topic: H256 = WRONGSECRET_LOG_MSG.parse().unwrap();
+    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
+    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
+    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
 
     // Send correct secret to contract
     let transaction_receipt = client.send_data(htlc, Some(Bytes(SECRET.to_vec())));
@@ -158,7 +163,7 @@ fn given_deployed_htlc_when_redeem_with_short_secret_then_ether_should_not_be_tr
         U256::from("0400000000000000000")
     );
 
-    client.send_data(
+    let transaction_receipt = client.send_data(
         htlc,
         Some(Bytes(vec![1u8, 2u8, 3u8, 4u8, 6u8, 6u8, 7u8, 9u8, 10u8])),
     );
@@ -169,6 +174,13 @@ fn given_deployed_htlc_when_redeem_with_short_secret_then_ether_should_not_be_tr
         client.eth_balance_of(htlc),
         U256::from("0400000000000000000")
     );
+
+    // Check log was emitted
+    assert_that(&transaction_receipt.logs).has_length(1);
+    let topic: H256 = WRONGSECRET_LOG_MSG.parse().unwrap();
+    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
+    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
+    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
 }
 
 #[test]
@@ -222,7 +234,7 @@ fn given_short_zero_secret_htlc_should_not_redeem() {
         U256::from("0400000000000000000")
     );
 
-    client.send_data(
+    let transaction_receipt = client.send_data(
         htlc,
         Some(Bytes(vec![
             0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
@@ -236,6 +248,12 @@ fn given_short_zero_secret_htlc_should_not_redeem() {
         client.eth_balance_of(htlc),
         U256::from("0400000000000000000")
     );
+    // Check log was emitted
+    assert_that(&transaction_receipt.logs).has_length(1);
+    let topic: H256 = WRONGSECRET_LOG_MSG.parse().unwrap();
+    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
+    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
+    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
 }
 
 #[test]
