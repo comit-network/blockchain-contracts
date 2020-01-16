@@ -170,20 +170,13 @@ impl Client {
             .expect("getblockchaininfo response result is null"))
     }
 
-    pub fn list_unspent(
-        &self,
-        minconf: Option<usize>,
-        maxconf: Option<usize>,
-        addresses: Option<&[Address]>,
-        include_unsafe: Option<bool>,
-    ) -> Result<Vec<Unspent>, Error> {
+    pub fn list_unspent(&self, addresses: Option<&[Address]>) -> Result<Vec<Unspent>, Error> {
         let request = JsonRpcRequest::new(
             "listunspent",
             vec![
-                serialize(minconf)?,
-                serialize(maxconf)?,
+                serde_json::Value::Null,
+                serde_json::Value::Null,
                 serialize(addresses)?,
-                serialize(include_unsafe)?,
             ],
         );
 
@@ -262,9 +255,7 @@ impl RegtestHelperClient for Client {
         address: &Address,
     ) -> Option<TxOut> {
         let address = address.clone();
-        let unspent = self
-            .list_unspent(Some(1), None, Some(&[address]), None)
-            .unwrap();
+        let unspent = self.list_unspent(Some(&[address])).unwrap();
 
         #[allow(clippy::cast_sign_loss)] // it is just for the tests
         unspent
