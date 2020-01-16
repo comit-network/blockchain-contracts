@@ -4,6 +4,7 @@ use std::{
     ops::DerefMut,
     sync::{Arc, Mutex},
 };
+use web3::types::{BlockNumber, TransactionId};
 use web3::{
     futures::Future,
     transports::Http,
@@ -186,6 +187,39 @@ impl ParityClient {
         log::debug!("Transaction Receipt: {:?}", receipt);
 
         receipt
+    }
+
+    pub fn call(&self, transaction_receipt: TransactionReceipt) -> Bytes {
+        let transaction_id = TransactionId::Hash(transaction_receipt.transaction_hash);
+        let transaction = self
+            .client
+            .eth()
+            .transaction(transaction_id)
+            .wait()
+            .unwrap()
+            .unwrap();
+
+        let call_request = CallRequest {
+            from: Some(transaction.from),
+            to: transaction.to.unwrap(),
+            gas: Some(transaction.gas),
+            gas_price: Some(transaction.gas_price),
+            value: Some(transaction.value),
+            data: Some(transaction.input),
+        };
+
+        //        let block_number = BlockNumber::Number(transaction_receipt.block_number.unwrap());
+        let block_number = Some(BlockNumber::Latest);
+
+        let return_data = self
+            .client
+            .eth()
+            .call(call_request, block_number)
+            .wait()
+            .unwrap();
+
+        log::debug!("Call return data {:?}", return_data);
+        return_data
     }
 
     pub fn deploy_htlc(&self, data: Bytes, value: U256) -> H256 {
