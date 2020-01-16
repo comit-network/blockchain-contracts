@@ -95,24 +95,14 @@ impl Client {
     pub fn get_new_address(&self) -> Result<Address, Error> {
         let request = JsonRpcRequest::<Vec<()>>::new("getnewaddress", Vec::new());
 
-        let response = reqwest::blocking::Client::new()
+        Ok(reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
-            .json()?;
-
-        match response {
-            JsonRpcResponse {
-                result: None,
-                error: Some(error),
-            } => Err(Error::Rpc(error)),
-            JsonRpcResponse {
-                result: Some(result),
-                error: None,
-            } => Ok(result),
-            _ => panic!("Received response with both result and error null"),
-        }
+            .json::<JsonRpcResponse<_>>()?
+            .result
+            .expect("getnewaddress response result is null"))
     }
 
     pub fn generate(&self, num: u32) -> Result<(), Error> {
@@ -136,6 +126,7 @@ impl Client {
             .json(&request)
             .send()?
             .json()?;
+
         match response {
             JsonRpcResponse {
                 result: None,
@@ -159,40 +150,24 @@ impl Client {
             .send()?
             .json()?;
 
-        match response {
-            JsonRpcResponse {
-                result: None,
-                error: Some(error),
-            } => Err(Error::Rpc(error)),
-            JsonRpcResponse {
-                result: Some(result),
-                error: None,
-            } => Ok(deserialize(&hex_bytes(&result)?)?),
-            _ => panic!("Received response with both result and error null"),
-        }
+        Ok(deserialize(&hex_bytes(
+            &response
+                .result
+                .expect("getrawtransaction response result is null"),
+        )?)?)
     }
 
     pub fn get_blockchain_info(&self) -> Result<BlockchainInfo, Error> {
         let request = JsonRpcRequest::<Vec<()>>::new("getblockchaininfo", vec![]);
 
-        let response = reqwest::blocking::Client::new()
+        Ok(reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
-            .json()?;
-
-        match response {
-            JsonRpcResponse {
-                result: None,
-                error: Some(error),
-            } => Err(Error::Rpc(error)),
-            JsonRpcResponse {
-                result: Some(result),
-                error: None,
-            } => Ok(result),
-            _ => panic!("Received response with both result and error null"),
-        }
+            .json::<JsonRpcResponse<_>>()?
+            .result
+            .expect("getblockchaininfo response result is null"))
     }
 
     pub fn list_unspent(
@@ -212,23 +187,14 @@ impl Client {
             ],
         );
 
-        let response = reqwest::blocking::Client::new()
+        Ok(reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
-            .json()?;
-        match response {
-            JsonRpcResponse {
-                result: None,
-                error: Some(error),
-            } => Err(Error::Rpc(error)),
-            JsonRpcResponse {
-                result: Some(result),
-                error: None,
-            } => Ok(result),
-            _ => panic!("Received response with both result and error null"),
-        }
+            .json::<JsonRpcResponse<_>>()?
+            .result
+            .expect("list_unspent response result is null"))
     }
 
     pub fn send_to_address(
@@ -241,23 +207,14 @@ impl Client {
             vec![serialize(address)?, serialize(amount.as_btc())?],
         );
 
-        let response = reqwest::blocking::Client::new()
+        Ok(reqwest::blocking::Client::new()
             .post(self.endpoint.as_str())
             .basic_auth(&self.auth.username, Some(&self.auth.password))
             .json(&request)
             .send()?
-            .json()?;
-        match response {
-            JsonRpcResponse {
-                result: None,
-                error: Some(error),
-            } => Err(Error::Rpc(error)),
-            JsonRpcResponse {
-                result: Some(result),
-                error: None,
-            } => Ok(result),
-            _ => panic!("Received response with both result and error null"),
-        }
+            .json::<JsonRpcResponse<_>>()?
+            .result
+            .expect("sendtoaddress response result is null"))
     }
 }
 
