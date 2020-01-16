@@ -122,7 +122,8 @@ fn given_funded_erc20_htlc_when_redeemed_with_secret_then_tokens_are_transferred
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
 
     // Send correct secret to contract
-    client.send_data(htlc_address, Some(Bytes(SECRET.to_vec())));
+    let transaction_receipt = client.send_data(htlc_address, Some(Bytes(SECRET.to_vec())));
+    log::debug!("used gas ERC20 redeemed {:?}", transaction_receipt.gas_used);
 
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
@@ -173,7 +174,8 @@ fn given_deployed_erc20_htlc_when_refunded_after_expiry_time_then_tokens_are_ref
 
     // Wait for the contract to expire
     sleep_until(harness_params.htlc_refund_timestamp);
-    client.send_data(htlc_address, None);
+    let transaction_receipt = client.send_data(htlc_address, None);
+    log::debug!("used gas ERC20 refund {:?}", transaction_receipt.gas_used);
 
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
@@ -227,6 +229,10 @@ fn given_deployed_erc20_htlc_when_expiry_time_not_yet_reached_and_wrong_secret_t
 
     // Don't wait for the timeout and don't send a secret
     let transaction_receipt = client.send_data(htlc_address, None);
+    log::debug!(
+        "used gas ERC20 too early {:?}",
+        transaction_receipt.gas_used
+    );
 
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
@@ -328,9 +334,14 @@ fn given_htlc_and_redeem_should_emit_redeem_log_msg_with_secret() {
     assert_that(&transaction_receipt.logs[0].topics).has_length(1);
     assert_that(&transaction_receipt.logs[0].topics).contains(topic);
     assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
+    log::debug!(
+        "used gas ERC20 invalid secret {:?}",
+        transaction_receipt.gas_used
+    );
 
     // Send correct secret to contract
     let transaction_receipt = client.send_data(htlc_address, Some(Bytes(SECRET.to_vec())));
+    log::debug!("used gas ERC20 redeem {:?}", transaction_receipt.gas_used);
 
     // Should contain 2 logs: 1 for token transfer 1 for redeeming the htlc
     assert_that(&transaction_receipt.logs.len()).is_equal_to(2);

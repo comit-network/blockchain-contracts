@@ -36,7 +36,8 @@ fn given_deployed_htlc_when_redeemed_with_secret_then_money_is_transferred() {
     );
 
     // Send correct secret to contract
-    client.send_data(htlc, Some(Bytes(SECRET.to_vec())));
+    let transaction_receipt = client.send_data(htlc, Some(Bytes(SECRET.to_vec())));
+    log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
 
     assert_eq!(
         client.eth_balance_of(bob),
@@ -60,7 +61,8 @@ fn given_deployed_htlc_when_refunded_after_expiry_time_then_money_is_refunded() 
 
     // Wait for the contract to expire
     sleep_until(harness_params.htlc_refund_timestamp);
-    client.send_data(htlc, None);
+    let transaction_receipt = client.send_data(htlc, None);
+    log::debug!("used gas ETH refund {:?}", transaction_receipt.gas_used);
 
     assert_eq!(client.eth_balance_of(bob), U256::from(0));
     assert_eq!(client.eth_balance_of(htlc), U256::from(0));
@@ -84,6 +86,7 @@ fn given_deployed_htlc_when_refunded_too_early_emits_log() {
 
     // Don't wait for the timeout and don't send a secret
     let transaction_receipt = client.send_data(htlc, None);
+    log::debug!("used gas ETH too early {:?}", transaction_receipt.gas_used);
 
     // Check refund did not happen
     assert_eq!(client.eth_balance_of(bob), U256::from(0));
@@ -114,9 +117,14 @@ fn given_htlc_and_redeem_should_emit_redeem_log_msg_with_secret() {
     assert_that(&transaction_receipt.logs[0].topics).has_length(1);
     assert_that(&transaction_receipt.logs[0].topics).contains(topic);
     assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
+    log::debug!(
+        "used gas ETH invalid secret {:?}",
+        transaction_receipt.gas_used
+    );
 
     // Send correct secret to contract
     let transaction_receipt = client.send_data(htlc, Some(Bytes(SECRET.to_vec())));
+    log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
 
     assert_that(&transaction_receipt.logs).has_length(1);
     let topic: H256 = REDEEMED_LOG_MSG.parse().unwrap();
