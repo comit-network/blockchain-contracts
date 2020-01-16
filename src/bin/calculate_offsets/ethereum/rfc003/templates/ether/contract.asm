@@ -68,6 +68,7 @@ check_expiry:
 
     // log keccak256(TooEarly)
     log1(0, 0, 0xBBAD9D5BF43FC68B6AB3D56342306BFC459ABE19DD1D361DBCAB75C00400B85C)
+    return(0, 0)
 
 exit:
     // Exit

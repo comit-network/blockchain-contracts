@@ -6,7 +6,7 @@ pub mod htlc_harness;
 pub mod parity_client;
 
 use crate::htlc_harness::{
-    ether_harness, sleep_until, CustomSizeSecret, EtherHarnessParams, Timestamp, SECRET,
+    ether_harness, sleep_until, CustomSizeSecret, EtherHarnessParams, SECRET,
 };
 use spectral::prelude::*;
 use testcontainers::clients::Cli;
