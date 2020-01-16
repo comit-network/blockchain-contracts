@@ -8,7 +8,6 @@ pub mod parity_client;
 
 use crate::{
     bitcoin_helper::Client,
-    bitcoin_helper::RegtestHelperClient,
     htlc_harness::{CustomSizeSecret, Timestamp, SECRET, SECRET_HASH},
 };
 use bitcoin_helper::new_tc_bitcoincore_client;

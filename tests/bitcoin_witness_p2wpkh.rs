@@ -1,6 +1,6 @@
 pub mod bitcoin_helper;
 
-use bitcoin_helper::{new_tc_bitcoincore_client, RegtestHelperClient};
+use bitcoin_helper::new_tc_bitcoincore_client;
 use blockchain_contracts::bitcoin::witness::{PrimedInput, PrimedTransaction, UnlockP2wpkh};
 use rust_bitcoin::{
     consensus::encode::serialize_hex,

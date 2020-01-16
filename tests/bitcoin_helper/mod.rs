@@ -209,6 +209,69 @@ impl Client {
             .result
             .expect("sendtoaddress response result is null"))
     }
+
+    pub fn find_utxo_at_tx_for_address(
+        &self,
+        txid: &sha256d::Hash,
+        address: &Address,
+    ) -> Option<TxOut> {
+        let address = address.clone();
+        let unspent = self.list_unspent(Some(&[address])).unwrap();
+
+        #[allow(clippy::cast_sign_loss)] // it is just for the tests
+        unspent
+            .into_iter()
+            .find(|utxo| utxo.txid == *txid)
+            .map(|result| TxOut {
+                value: Amount::from_btc(result.amount)
+                    .expect("Could not convert received amount to Amount")
+                    .as_sat(),
+                script_pubkey: result.script_pub_key,
+            })
+    }
+
+    pub fn find_vout_for_address(&self, txid: &sha256d::Hash, address: &Address) -> OutPoint {
+        let tx = self.get_raw_transaction(&txid).unwrap();
+
+        tx.output
+            .iter()
+            .enumerate()
+            .find_map(|(vout, txout)| {
+                let vout = u32::try_from(vout).unwrap();
+                if txout.script_pubkey == address.script_pubkey() {
+                    Some(OutPoint { txid: *txid, vout })
+                } else {
+                    None
+                }
+            })
+            .unwrap()
+    }
+
+    pub fn mine_bitcoins(&self) {
+        self.generate(101).unwrap();
+    }
+
+    pub fn create_p2wpkh_vout_at(
+        &self,
+        public_key: rust_bitcoin::secp256k1::PublicKey,
+        amount: Amount,
+    ) -> (sha256d::Hash, OutPoint) {
+        let address = Address::p2wpkh(
+            &PublicKey {
+                compressed: true,
+                key: public_key,
+            },
+            Network::Regtest,
+        );
+
+        let txid = self.send_to_address(&address.clone(), amount).unwrap();
+
+        self.generate(1).unwrap();
+
+        let vout = self.find_vout_for_address(&txid, &address);
+
+        (txid, vout)
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -233,82 +296,4 @@ pub fn new_tc_bitcoincore_client<D: Docker>(container: &Container<'_, D, Bitcoin
     let endpoint = format!("http://localhost:{}", port);
 
     Client::new(endpoint, auth.to_owned())
-}
-
-//TODO: Remove this trait?
-pub trait RegtestHelperClient {
-    fn find_utxo_at_tx_for_address(&self, txid: &sha256d::Hash, address: &Address)
-        -> Option<TxOut>;
-    fn find_vout_for_address(&self, txid: &sha256d::Hash, address: &Address) -> OutPoint;
-    fn mine_bitcoins(&self);
-    fn create_p2wpkh_vout_at(
-        &self,
-        dest: rust_bitcoin::secp256k1::PublicKey,
-        value: Amount,
-    ) -> (sha256d::Hash, OutPoint);
-}
-
-impl RegtestHelperClient for Client {
-    fn find_utxo_at_tx_for_address(
-        &self,
-        txid: &sha256d::Hash,
-        address: &Address,
-    ) -> Option<TxOut> {
-        let address = address.clone();
-        let unspent = self.list_unspent(Some(&[address])).unwrap();
-
-        #[allow(clippy::cast_sign_loss)] // it is just for the tests
-        unspent
-            .into_iter()
-            .find(|utxo| utxo.txid == *txid)
-            .map(|result| TxOut {
-                value: Amount::from_btc(result.amount)
-                    .expect("Could not convert received amount to Amount")
-                    .as_sat(),
-                script_pubkey: result.script_pub_key,
-            })
-    }
-
-    fn find_vout_for_address(&self, txid: &sha256d::Hash, address: &Address) -> OutPoint {
-        let tx = self.get_raw_transaction(&txid).unwrap();
-
-        tx.output
-            .iter()
-            .enumerate()
-            .find_map(|(vout, txout)| {
-                let vout = u32::try_from(vout).unwrap();
-                if txout.script_pubkey == address.script_pubkey() {
-                    Some(OutPoint { txid: *txid, vout })
-                } else {
-                    None
-                }
-            })
-            .unwrap()
-    }
-
-    fn mine_bitcoins(&self) {
-        self.generate(101).unwrap();
-    }
-
-    fn create_p2wpkh_vout_at(
-        &self,
-        public_key: rust_bitcoin::secp256k1::PublicKey,
-        amount: Amount,
-    ) -> (sha256d::Hash, OutPoint) {
-        let address = Address::p2wpkh(
-            &PublicKey {
-                compressed: true,
-                key: public_key,
-            },
-            Network::Regtest,
-        );
-
-        let txid = self.send_to_address(&address.clone(), amount).unwrap();
-
-        self.generate(1).unwrap();
-
-        let vout = self.find_vout_for_address(&txid, &address);
-
-        (txid, vout)
-    }
 }
