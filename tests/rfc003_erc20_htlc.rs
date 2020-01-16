@@ -624,3 +624,80 @@ fn given_invalid_secret_htlc_should_not_redeem_and_print_log() {
     assert_that(&transaction_receipt.logs[0].topics).contains(topic);
     assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
 }
+
+#[test]
+fn invalid_secret_should_return_value() {
+    let docker = Cli::default();
+    let secret_vec = vec![
+        0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+        0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+    ];
+
+    let (alice, bob, htlc_address, token_contract, token_amount, client, _handle, _container) =
+        erc20_harness(&docker, Erc20HarnessParams::default());
+
+    // Fund erc20 htlc
+    client.sign_and_send(|nonce, gas_price| UnsignedTransaction {
+        nonce,
+        gas_price,
+        gas_limit: U256::from(100_000),
+        to: Some(token_contract),
+        value: U256::from(0),
+        data: Some(
+            Erc20Htlc::transfer_erc20_tx_payload(
+                TokenQuantity(token_amount.into()),
+                Address(htlc_address.into()),
+            )
+            .into(),
+        ),
+    });
+
+    // Send short secret to contract
+    let transaction_receipt = client.send_data(htlc_address, Some(Bytes(secret_vec)));
+
+    // Get return data from transaction
+    let return_data = client.call(transaction_receipt);
+    let topic: H256 = WRONGSECRET_LOG_MSG.parse().unwrap();
+    let topic_as_bytes = topic.to_fixed_bytes();
+
+    assert_that(&return_data).is_equal_to(Bytes(topic_as_bytes.to_vec()));
+}
+
+#[test]
+fn refund_too_early_should_return_value() {
+    let docker = Cli::default();
+    let (alice, bob, htlc_address, token_contract, token_amount, client, _handle, _container) =
+        erc20_harness(
+            &docker,
+            Erc20HarnessParams {
+                htlc_refund_timestamp: Timestamp::now().plus(1_000_000),
+                ..Default::default()
+            },
+        );
+
+    // fund erc20 htlc
+    client.sign_and_send(|nonce, gas_price| UnsignedTransaction {
+        nonce,
+        gas_price,
+        gas_limit: U256::from(100_000),
+        to: Some(token_contract),
+        value: U256::from(0),
+        data: Some(
+            Erc20Htlc::transfer_erc20_tx_payload(
+                TokenQuantity(token_amount.into()),
+                Address(htlc_address.into()),
+            )
+            .into(),
+        ),
+    });
+
+    // Don't wait for the timeout and don't send a secret
+    let transaction_receipt = client.send_data(htlc_address, None);
+
+    // Get return data from transaction
+    let return_data = client.call(transaction_receipt);
+    let topic: H256 = TOOEARLY_LOG_MSG.parse().unwrap();
+    let topic_as_bytes = topic.to_fixed_bytes();
+
+    assert_that(&return_data).is_equal_to(Bytes(topic_as_bytes.to_vec()));
+}

@@ -292,7 +292,7 @@ fn given_invalid_secret_htlc_should_not_redeem_and_print_log() {
 }
 
 #[test]
-fn given_invalid_secret_htlc_should_not_redeem_and_return_value() {
+fn invalid_secret_should_return_value() {
     let docker = Cli::default();
     let (_alice, bob, htlc, client, _handle, _container) =
         ether_harness(&docker, EtherHarnessParams::default());
@@ -318,6 +318,7 @@ fn given_invalid_secret_htlc_should_not_redeem_and_return_value() {
         U256::from("0400000000000000000")
     );
 
+    // Get return data from transaction
     let return_data = client.call(transaction_receipt);
     let topic: H256 = WRONGSECRET_LOG_MSG.parse().unwrap();
     let topic_as_bytes = topic.to_fixed_bytes();
@@ -351,6 +352,7 @@ fn refund_too_early_should_return_value() {
         U256::from("0400000000000000000")
     );
 
+    // Get return data from transaction
     let return_data = client.call(transaction_receipt);
     let topic: H256 = TOOEARLY_LOG_MSG.parse().unwrap();
     let topic_as_bytes = topic.to_fixed_bytes();
