@@ -1,7 +1,6 @@
 #![warn(unused_extern_crates, missing_debug_implementations, rust_2018_idioms)]
 #![forbid(unsafe_code)]
 
-use anyhow::Context;
 use rust_bitcoin::util::misc::hex_bytes;
 use rust_bitcoin::{
     consensus::deserialize, hashes::sha256d, Address, Amount, Network, OutPoint, PublicKey, Script,
@@ -26,8 +25,8 @@ struct JsonRpcResponse<R> {
     error: Option<RpcError>,
 }
 
-#[derive(Debug, Deserialize)]
-struct RpcError {
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct RpcError {
     code: i32,
     message: String,
 }
@@ -37,8 +36,6 @@ impl std::fmt::Display for RpcError {
         write!(f, "{:?}", self)
     }
 }
-
-impl std::error::Error for RpcError {}
 
 impl<T> JsonRpcRequest<T> {
     fn new(method: &str, params: T) -> Self {
@@ -51,8 +48,8 @@ impl<T> JsonRpcRequest<T> {
     }
 }
 
-fn serialize<T: Serialize>(t: T) -> anyhow::Result<serde_json::Value> {
-    let value = serde_json::to_value(t).context("failed to serialize parameter")?;
+fn serialize<T: Serialize>(t: T) -> Result<serde_json::Value, Error> {
+    let value = serde_json::to_value(t).map_err(Error::Serialize)?;
 
     Ok(value)
 }
@@ -68,6 +65,8 @@ pub enum Error {
     Address(rust_bitcoin::util::address::Error),
     Reqwest(reqwest::Error),
     Encode(rust_bitcoin::consensus::encode::Error),
+    Rpc(RpcError),
+    Serialize(serde_json::Error),
 }
 
 impl From<reqwest::Error> for Error {
@@ -93,7 +92,7 @@ impl Client {
         Client { endpoint, auth }
     }
 
-    pub fn get_new_address(&self) -> anyhow::Result<Address> {
+    pub fn get_new_address(&self) -> Result<Address, Error> {
         let request = JsonRpcRequest::<Vec<()>>::new("getnewaddress", Vec::new());
 
         let response = reqwest::blocking::Client::new()
@@ -107,16 +106,16 @@ impl Client {
             JsonRpcResponse {
                 result: None,
                 error: Some(error),
-            } => Err(anyhow::Error::new(error)),
+            } => Err(Error::Rpc(error)),
             JsonRpcResponse {
                 result: Some(result),
                 error: None,
             } => Ok(result),
-            _ => Err(anyhow::Error::msg(".result and .error were null")),
+            _ => panic!("Received response with both result and error null"),
         }
     }
 
-    pub fn generate(&self, num: u32) -> anyhow::Result<()> {
+    pub fn generate(&self, num: u32) -> Result<(), Error> {
         let request = JsonRpcRequest::new("generate", vec![serialize(num)?]);
 
         let _ = reqwest::blocking::Client::new()
@@ -128,7 +127,7 @@ impl Client {
         Ok(())
     }
 
-    pub fn send_raw_transaction(&self, hex: String) -> anyhow::Result<sha256d::Hash> {
+    pub fn send_raw_transaction(&self, hex: String) -> Result<sha256d::Hash, Error> {
         let request = JsonRpcRequest::new("sendrawtransaction", vec![serialize(hex)?]);
 
         let response = reqwest::blocking::Client::new()
@@ -141,16 +140,16 @@ impl Client {
             JsonRpcResponse {
                 result: None,
                 error: Some(error),
-            } => Err(anyhow::Error::new(error)),
+            } => Err(Error::Rpc(error)),
             JsonRpcResponse {
                 result: Some(result),
                 error: None,
             } => Ok(result),
-            _ => Err(anyhow::Error::msg(".result and .error were null")),
+            _ => panic!("Received response with both result and error null"),
         }
     }
 
-    pub fn get_raw_transaction(&self, txid: &sha256d::Hash) -> anyhow::Result<Transaction> {
+    pub fn get_raw_transaction(&self, txid: &sha256d::Hash) -> Result<Transaction, Error> {
         let request = JsonRpcRequest::new("getrawtransaction", vec![serialize(txid)?]);
 
         let response: JsonRpcResponse<String> = reqwest::blocking::Client::new()
@@ -164,16 +163,16 @@ impl Client {
             JsonRpcResponse {
                 result: None,
                 error: Some(error),
-            } => Err(anyhow::Error::new(error)),
+            } => Err(Error::Rpc(error)),
             JsonRpcResponse {
                 result: Some(result),
                 error: None,
             } => Ok(deserialize(&hex_bytes(&result)?)?),
-            _ => Err(anyhow::Error::msg(".result and .error were null")),
+            _ => panic!("Received response with both result and error null"),
         }
     }
 
-    pub fn get_blockchain_info(&self) -> anyhow::Result<BlockchainInfo> {
+    pub fn get_blockchain_info(&self) -> Result<BlockchainInfo, Error> {
         let request = JsonRpcRequest::<Vec<()>>::new("getblockchaininfo", vec![]);
 
         let response = reqwest::blocking::Client::new()
@@ -187,12 +186,12 @@ impl Client {
             JsonRpcResponse {
                 result: None,
                 error: Some(error),
-            } => Err(anyhow::Error::new(error)),
+            } => Err(Error::Rpc(error)),
             JsonRpcResponse {
                 result: Some(result),
                 error: None,
             } => Ok(result),
-            _ => Err(anyhow::Error::msg(".result and .error were null")),
+            _ => panic!("Received response with both result and error null"),
         }
     }
 
@@ -202,7 +201,7 @@ impl Client {
         maxconf: Option<usize>,
         addresses: Option<&[Address]>,
         include_unsafe: Option<bool>,
-    ) -> anyhow::Result<Vec<Unspent>> {
+    ) -> Result<Vec<Unspent>, Error> {
         let request = JsonRpcRequest::new(
             "listunspent",
             vec![
@@ -223,12 +222,12 @@ impl Client {
             JsonRpcResponse {
                 result: None,
                 error: Some(error),
-            } => Err(anyhow::Error::new(error)),
+            } => Err(Error::Rpc(error)),
             JsonRpcResponse {
                 result: Some(result),
                 error: None,
             } => Ok(result),
-            _ => Err(anyhow::Error::msg(".result and .error were null")),
+            _ => panic!("Received response with both result and error null"),
         }
     }
 
@@ -236,7 +235,7 @@ impl Client {
         &self,
         address: &Address,
         amount: Amount,
-    ) -> anyhow::Result<sha256d::Hash> {
+    ) -> Result<sha256d::Hash, Error> {
         let request = JsonRpcRequest::new(
             "sendtoaddress",
             vec![serialize(address)?, serialize(amount.as_btc())?],
@@ -252,12 +251,12 @@ impl Client {
             JsonRpcResponse {
                 result: None,
                 error: Some(error),
-            } => Err(anyhow::Error::new(error)),
+            } => Err(Error::Rpc(error)),
             JsonRpcResponse {
                 result: Some(result),
                 error: None,
             } => Ok(result),
-            _ => Err(anyhow::Error::msg(".result and .error were null")),
+            _ => panic!("Received response with both result and error null"),
         }
     }
 }

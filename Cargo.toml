@@ -23,7 +23,6 @@ serde_json = "1.0"
 tiny-keccak = "2.0"
 
 [dev-dependencies]
-anyhow = "1"
 failure = "0.1"
 lazy_static = "1.4"
 log = "0.4"
