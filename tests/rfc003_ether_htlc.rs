@@ -13,7 +13,7 @@ use serde_json::json;
 use spectral::prelude::*;
 use testcontainers::clients::Cli;
 use web3::error::Error::Rpc;
-use web3::types::{Bytes, TransactionReceipt, H256, U256};
+use web3::types::{Bytes, Log, TransactionReceipt, H256, U256};
 
 // keccak256(Redeemed())
 const REDEEMED_LOG_MSG: &str = "B8CAC300E37F03AD332E581DEA21B2F0B84EAAADC184A295FEF71E81F44A7413";
@@ -46,11 +46,11 @@ fn given_deployed_htlc_when_redeemed_with_secret_then_money_is_transferred() {
     );
     assert_eq!(client.eth_balance_of(htlc), U256::from(0));
 
-    assert_that(&transaction_receipt.logs).has_length(1);
     let topic: H256 = REDEEMED_LOG_MSG.parse().unwrap();
-    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
-    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
-    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(SECRET.to_vec()));
+    let Log { topics, data, .. } = &transaction_receipt.logs[0];
+
+    assert_that(topics).contains(topic);
+    assert_that(data).is_equal_to(Bytes(SECRET.to_vec()));
 }
 
 #[test]
@@ -126,11 +126,13 @@ fn given_htlc_and_refund_should_emit_refund_log_msg() {
     sleep_until(harness_params.htlc_refund_timestamp);
     let transaction_receipt = client.send_data(htlc, None);
 
-    assert_that(&transaction_receipt.logs).has_length(1);
     let topic: H256 = REFUNDED_LOG_MSG.parse().unwrap();
-    assert_that(&transaction_receipt.logs[0].topics).has_length(1);
-    assert_that(&transaction_receipt.logs[0].topics).contains(topic);
-    assert_that(&transaction_receipt.logs[0].data).is_equal_to(Bytes(vec![]));
+    let Log { topics, data, .. } = assert_that(&transaction_receipt.logs)
+        .map(|x| &x[0])
+        .subject;
+
+    assert_that(topics).contains(topic);
+    assert_that(data).is_equal_to(Bytes(vec![]));
 }
 
 #[test]
