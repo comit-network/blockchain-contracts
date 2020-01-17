@@ -16,12 +16,11 @@ use web3::error::Error::Rpc;
 use web3::types::{Bytes, Log, TransactionReceipt, H256, U256};
 
 // keccak256(Redeemed())
-const REDEEMED_LOG_MSG: &str = "B8CAC300E37F03AD332E581DEA21B2F0B84EAAADC184A295FEF71E81F44A7413";
+const REDEEMED_LOG_MSG: &str = "72656465656d6564000000000000000000000000000000000000000000000000";
 // keccak256(Refunded())
-const REFUNDED_LOG_MSG: &str = "5D26862916391BF49478B2F5103B0720A842B45EF145A268F2CD1FB2AED55178";
-const TOOEARLY_LOG_MSG: &str = "0xbbad9d5bf43fc68b6ab3d56342306bfc459abe19dd1d361dbcab75c00400b85c";
-const WRONGSECRET_LOG_MSG: &str =
-    "0x05f03ebf077f616c9d02b91c7fcbac32beef85527aedff9cf81357a5a00c8c41";
+const REFUNDED_LOG_MSG: &str = "726566756e646564000000000000000000000000000000000000000000000000";
+const TOO_EARLY: &str = "0x746f6f4561726c79000000000000000000000000000000000000000000000000";
+const INVALID_SECRET: &str = "0x696e76616c696453656372657400000000000000000000000000000000000000";
 
 #[test]
 fn given_deployed_htlc_when_redeemed_with_secret_then_money_is_transferred() {
@@ -82,8 +81,7 @@ fn given_deployed_htlc_when_refunded_too_early_should_revert_tx_with_error() {
         htlc_refund_timestamp: Timestamp::now().plus(1_000_000),
         ..Default::default()
     };
-    let (_alice, bob, htlc, client, _handle, _container) =
-        ether_harness(&docker, harness_params.clone());
+    let (_alice, bob, htlc, client, _handle, _container) = ether_harness(&docker, harness_params);
 
     assert_eq!(client.eth_balance_of(bob), U256::from(0));
     assert_eq!(
@@ -101,7 +99,7 @@ fn given_deployed_htlc_when_refunded_too_early_should_revert_tx_with_error() {
         client.eth_balance_of(htlc),
         U256::from("0400000000000000000")
     );
-    assert_return_data(&client, transaction_receipt, TOOEARLY_LOG_MSG);
+    assert_return_data(&client, transaction_receipt, TOO_EARLY);
 }
 
 #[test]
@@ -167,7 +165,7 @@ fn given_deployed_htlc_when_redeem_with_short_secret_should_revert_with_error() 
         U256::from("0400000000000000000")
     );
 
-    assert_return_data(&client, transaction_receipt, WRONGSECRET_LOG_MSG);
+    assert_return_data(&client, transaction_receipt, INVALID_SECRET);
 }
 
 #[test]
@@ -235,7 +233,7 @@ fn given_short_zero_secret_htlc_should_revert_tx_with_error() {
         client.eth_balance_of(htlc),
         U256::from("0400000000000000000")
     );
-    assert_return_data(&client, transaction_receipt, WRONGSECRET_LOG_MSG);
+    assert_return_data(&client, transaction_receipt, INVALID_SECRET);
 }
 
 #[test]
@@ -265,7 +263,7 @@ fn given_invalid_secret_htlc_should_revert_tx_with_error() {
         client.eth_balance_of(htlc),
         U256::from("0400000000000000000")
     );
-    assert_return_data(&client, transaction_receipt, WRONGSECRET_LOG_MSG);
+    assert_return_data(&client, transaction_receipt, INVALID_SECRET);
 }
 
 fn assert_return_data(
