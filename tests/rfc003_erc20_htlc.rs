@@ -604,7 +604,6 @@ fn given_invalid_secret_htlc_should_revert_tx_with_error() {
     );
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
 
-    // Send short secret to contract
     let transaction_receipt = client.send_data(htlc_address, Some(Bytes(secret_vec)));
     log::debug!(
         "used gas ERC20 invalid secret {:?}",
