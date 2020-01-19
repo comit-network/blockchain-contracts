@@ -3,3 +3,15 @@ pub mod ether_htlc;
 
 pub use erc20_htlc::Erc20Htlc;
 pub use ether_htlc::EtherHtlc;
+
+// ascii of "redeemed"
+pub const REDEEMED_LOG_MSG: &str =
+    "72656465656d6564000000000000000000000000000000000000000000000000";
+// ascii of "refunded"
+pub const REFUNDED_LOG_MSG: &str =
+    "726566756e646564000000000000000000000000000000000000000000000000";
+// ascii of "tooEarly"
+pub const TOO_EARLY: &str = "0x746f6f4561726c79000000000000000000000000000000000000000000000000";
+// ascii of "invalidSecret"
+pub const INVALID_SECRET: &str =
+    "0x696e76616c696453656372657400000000000000000000000000000000000000";

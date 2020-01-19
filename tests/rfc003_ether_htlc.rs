@@ -8,19 +8,16 @@ pub mod parity_client;
 use crate::htlc_harness::{
     ether_harness, sleep_until, CustomSizeSecret, EtherHarnessParams, Timestamp, SECRET,
 };
+use blockchain_contracts::ethereum::rfc003::INVALID_SECRET;
+use blockchain_contracts::ethereum::rfc003::REDEEMED_LOG_MSG;
+use blockchain_contracts::ethereum::rfc003::REFUNDED_LOG_MSG;
+use blockchain_contracts::ethereum::rfc003::TOO_EARLY;
 use parity_client::ParityClient;
 use serde_json::json;
 use spectral::prelude::*;
 use testcontainers::clients::Cli;
 use web3::error::Error::Rpc;
 use web3::types::{Bytes, Log, TransactionReceipt, H256, U256};
-
-// keccak256(Redeemed())
-const REDEEMED_LOG_MSG: &str = "72656465656d6564000000000000000000000000000000000000000000000000";
-// keccak256(Refunded())
-const REFUNDED_LOG_MSG: &str = "726566756e646564000000000000000000000000000000000000000000000000";
-const TOO_EARLY: &str = "0x746f6f4561726c79000000000000000000000000000000000000000000000000";
-const INVALID_SECRET: &str = "0x696e76616c696453656372657400000000000000000000000000000000000000";
 
 #[test]
 fn given_deployed_htlc_when_redeemed_with_secret_then_money_is_transferred() {
