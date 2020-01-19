@@ -90,7 +90,7 @@ invalid_secret:
 
 */
 redeem:
-    // log asccci to hex of "redeemed"
+    // log ascii to hex of "redeemed"
     // 0x72656465656d6564000000000000000000000000000000000000000000000000
     log1(0, 32, "redeemed")
     mstore(32,0x3000000000000000000000000000000000000003) // redeem address
@@ -98,7 +98,7 @@ redeem:
     jump
 
 refund:
-    // log asccci to hex of "refunded"
+    // log ascii to hex of "refunded"
     // 0x726566756e646564000000000000000000000000000000000000000000000000
     log1(0, 0, "refunded")
     mstore(32, 0x4000000000000000000000000000000000000004) // refund address
