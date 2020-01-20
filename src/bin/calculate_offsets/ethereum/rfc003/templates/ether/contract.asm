@@ -71,7 +71,7 @@ check_expiry:
 
 
 redeem:
-    // log asccci to hex of "redeemed"
+    // log ascii to hex of "redeemed"
     // 0x72656465656d6564000000000000000000000000000000000000000000000000
     log1(0, 32, "redeemed")
     selfdestruct(0x3000000000000000000000000000000000000003) 
