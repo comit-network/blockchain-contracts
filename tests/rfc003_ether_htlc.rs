@@ -270,7 +270,7 @@ fn assert_return_data(
 ) {
     let result = client.get_return_data(transaction_receipt);
     let return_data = result.err().unwrap();
-    let json = json!(format!("{}{}", "Reverted ", error_code));
+    let json = json!(format!("{}0x{}", "Reverted ", error_code));
     match return_data {
         Rpc(e) => {
             asserting(&"contains VM message")

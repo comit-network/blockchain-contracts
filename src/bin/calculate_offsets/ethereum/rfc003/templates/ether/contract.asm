@@ -45,9 +45,11 @@
     redeem
     jumpi
 
-    // Jump to invalid secret if no match
-    invalid_secret
-    jump
+    // Continue to invalid secret if no match
+invalid_secret:
+    // return "invalidSecret" = 0x696e76616c69645365637265740000000000000000000000000000000000000000
+    mstore(0, "invalidSecret")
+    revert(0, 32)
 
 check_expiry:
     // Timestamp of the current block in seconds since the epoch
@@ -67,10 +69,6 @@ check_expiry:
     mstore(0, "tooEarly")
     revert(0, 32)
 
-invalid_secret:
-    // return "invalidSecret" = 0x696e76616c69645365637265740000000000000000000000000000000000000000
-    mstore(0, "invalidSecret")
-    revert(0, 32)
 
 redeem:
     // log asccci to hex of "redeemed"
