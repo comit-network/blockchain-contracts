@@ -20,7 +20,7 @@
     iszero
 
     // If passed secret is wrong size, jump to exit contract
-    exit
+    invalid_secret
     jumpi
 
     // Load secret into memory
@@ -45,8 +45,11 @@
     redeem
     jumpi
 
-    // Exit if hashes don't match
-    return(0, 0)
+    // Continue to invalid secret if no match
+invalid_secret:
+    // return "invalidSecret" = 0x696e76616c69645365637265740000000000000000000000000000000000000000
+    mstore(0, "invalidSecret")
+    revert(0, 32)
 
 check_expiry:
     // Timestamp of the current block in seconds since the epoch
@@ -62,15 +65,20 @@ check_expiry:
     refund
     jumpi
 
-exit:
-    // Exit
-    return(0, 0)
+    // return "too early" = 0x746f6f4561726c79000000000000000000000000000000000000000000000000
+    mstore(0, "tooEarly")
+    revert(0, 32)
+
 
 redeem:
-    log1(0, 32, 0xB8CAC300E37F03AD332E581DEA21B2F0B84EAAADC184A295FEF71E81F44A7413) // log keccak256(Redeemed(<secret>))
+    // log ascii to hex of "redeemed"
+    // 0x72656465656d6564000000000000000000000000000000000000000000000000
+    log1(0, 32, "redeemed")
     selfdestruct(0x3000000000000000000000000000000000000003) 
 
 refund:
-    log1(0, 0, 0x5D26862916391BF49478B2F5103B0720A842B45EF145A268F2CD1FB2AED55178) // log keccak256(Refunded())
+    // log asccci to hex of "refunded"
+    // 0x726566756e646564000000000000000000000000000000000000000000000000
+    log1(0, 0, "refunded")
     selfdestruct(0x4000000000000000000000000000000000000004)
 }
