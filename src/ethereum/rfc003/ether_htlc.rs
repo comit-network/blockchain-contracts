@@ -99,7 +99,7 @@ mod tests {
             "ac5a18da6431ed256965b873ef49dc15a70a0a66e2d28d0c226b5db040123727",
         )
         .unwrap();
-        let expiry = 1552263040;
+        let expiry = 1_552_263_040;
 
         let htlc = EtherHtlc::new(
             expiry,

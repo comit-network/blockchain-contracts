@@ -133,7 +133,7 @@ mod tests {
             "0000000000000000000000000000000000000000000000000DE0B6B3A7640000",
         )
         .unwrap();
-        let expiry = 1552263040;
+        let expiry = 1_552_263_040;
 
         let htlc = Erc20Htlc::new(
             expiry,
