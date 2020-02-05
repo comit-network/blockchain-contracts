@@ -16,9 +16,10 @@ use blockchain_contracts::bitcoin::{
     rfc003::bitcoin_htlc::BitcoinHtlc,
     witness::{PrimedInput, PrimedTransaction, UnlockParameters, Witness},
 };
+use rust_bitcoin::Txid;
 use rust_bitcoin::{
     consensus::encode::serialize_hex,
-    hashes::{hash160, sha256d, Hash},
+    hashes::{hash160, Hash},
     network::constants::Network,
     secp256k1::{self, PublicKey, Secp256k1, SecretKey},
     Address, Amount, OutPoint, PrivateKey,
@@ -82,7 +83,7 @@ fn fund_htlc(
     client: &Client,
     secret_hash: [u8; 32],
 ) -> (
-    sha256d::Hash,
+    Txid,
     OutPoint,
     Amount,
     BitcoinHtlc,
