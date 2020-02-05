@@ -190,7 +190,7 @@ mod test {
         let private_key =
             PrivateKey::from_str("L4nZrdzNnawCtaEcYGWuPqagQA3dJxVPgN8ARTXaMLCxiYCy89wm")?;
         let dst_addr = Address::from_str("bc1q87v7fjxcs29xvtz8kdu79u2tjfn3ppu0c3e6cl")?;
-        let txid = sha256d::Hash::default();
+        let txid = sha256d::Hash::default().into();
 
         let primed_txn = PrimedTransaction {
             inputs: vec![PrimedInput::new(

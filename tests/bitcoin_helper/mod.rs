@@ -1,7 +1,8 @@
 #![warn(unused_extern_crates, missing_debug_implementations, rust_2018_idioms)]
 #![forbid(unsafe_code)]
 
-use rust_bitcoin::util::misc::hex_bytes;
+use rust_bitcoin::hashes::hex::FromHex;
+use rust_bitcoin::Txid;
 use rust_bitcoin::{
     consensus::deserialize, hashes::sha256d, Address, Amount, Network, OutPoint, PublicKey, Script,
     Transaction, TxOut,
@@ -67,6 +68,7 @@ pub enum Error {
     Encode(rust_bitcoin::consensus::encode::Error),
     Rpc(RpcError),
     Serialize(serde_json::Error),
+    Hash(rust_bitcoin::hashes::hex::Error),
 }
 
 impl From<reqwest::Error> for Error {
@@ -84,6 +86,12 @@ impl From<rust_bitcoin::util::address::Error> for Error {
 impl From<rust_bitcoin::consensus::encode::Error> for Error {
     fn from(err: rust_bitcoin::consensus::encode::Error) -> Self {
         Error::Encode(err)
+    }
+}
+
+impl From<rust_bitcoin::hashes::hex::Error> for Error {
+    fn from(err: rust_bitcoin::hashes::hex::Error) -> Self {
+        Error::Hash(err)
     }
 }
 
@@ -140,7 +148,7 @@ impl Client {
         }
     }
 
-    pub fn get_raw_transaction(&self, txid: &sha256d::Hash) -> Result<Transaction, Error> {
+    pub fn get_raw_transaction(&self, txid: &Txid) -> Result<Transaction, Error> {
         let request = JsonRpcRequest::new("getrawtransaction", vec![serialize(txid)?]);
 
         let response: JsonRpcResponse<String> = reqwest::blocking::Client::new()
@@ -150,7 +158,7 @@ impl Client {
             .send()?
             .json()?;
 
-        Ok(deserialize(&hex_bytes(
+        Ok(deserialize(&Vec::<u8>::from_hex(
             &response
                 .result
                 .expect("getrawtransaction response result is null"),
@@ -190,11 +198,7 @@ impl Client {
             .expect("list_unspent response result is null"))
     }
 
-    pub fn send_to_address(
-        &self,
-        address: &Address,
-        amount: Amount,
-    ) -> Result<sha256d::Hash, Error> {
+    pub fn send_to_address(&self, address: &Address, amount: Amount) -> Result<Txid, Error> {
         let request = JsonRpcRequest::new(
             "sendtoaddress",
             vec![serialize(address)?, serialize(amount.as_btc())?],
@@ -230,7 +234,7 @@ impl Client {
             })
     }
 
-    pub fn find_vout_for_address(&self, txid: &sha256d::Hash, address: &Address) -> OutPoint {
+    pub fn find_vout_for_address(&self, txid: &Txid, address: &Address) -> OutPoint {
         let tx = self.get_raw_transaction(&txid).unwrap();
 
         tx.output
@@ -255,7 +259,7 @@ impl Client {
         &self,
         public_key: rust_bitcoin::secp256k1::PublicKey,
         amount: Amount,
-    ) -> (sha256d::Hash, OutPoint) {
+    ) -> (Txid, OutPoint) {
         let address = Address::p2wpkh(
             &PublicKey {
                 compressed: true,
