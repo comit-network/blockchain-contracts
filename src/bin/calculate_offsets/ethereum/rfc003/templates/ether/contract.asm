@@ -77,7 +77,7 @@ redeem:
     selfdestruct(0x3000000000000000000000000000000000000003) 
 
 refund:
-    // log asccci to hex of "refunded"
+    // log ascii to hex of "refunded"
     // 0x726566756e646564000000000000000000000000000000000000000000000000
     log1(0, 0, "refunded")
     selfdestruct(0x4000000000000000000000000000000000000004)
