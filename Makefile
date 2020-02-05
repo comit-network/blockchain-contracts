@@ -1,11 +1,11 @@
 RUSTUP = rustup
 
 # The CI should pass a RUST_TOOLCHAIN env var, if not we default to our MSRV 1.39.0
-RUST_TOOLCHAIN ?= 1.39.0
+RUST_TOOLCHAIN ?= 1.41.0
 TOOLCHAIN = $(RUST_TOOLCHAIN)
 CARGO = $(RUSTUP) run --install $(TOOLCHAIN) cargo --color always
 
-NIGHTLY_TOOLCHAIN = nightly-2019-12-30
+NIGHTLY_TOOLCHAIN = nightly-2020-01-15
 CARGO_NIGHTLY = $(RUSTUP) run --install $(NIGHTLY_TOOLCHAIN) cargo --color always
 
 GIT_HOOKS_PATH = ".githooks"
