@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Upgrade rust-bitcoin to 0.23.0.
-- Make `*Htlc::*tx_gas_limit` names more explicit.
+- **Breaking API Change**: Make `*Htlc::*tx_gas_limit` names more explicit.
 
 ### Fixed
 - Test `*Htlc::*tx_gas_limit` against Ethereum node.
