@@ -91,11 +91,6 @@ impl ParityClient {
             .unwrap()
             .unwrap();
 
-        log::debug!(
-            "Deploying the contract consumed {} gas",
-            receipt.gas_used.expect("Gas used is present")
-        );
-
         receipt.contract_address.unwrap()
     }
 
@@ -260,6 +255,15 @@ impl ParityClient {
         self.increment_nonce(nonce);
 
         tx_id
+    }
+
+    pub fn receipt(&self, tx: H256) -> TransactionReceipt {
+        self.client
+            .eth()
+            .transaction_receipt(tx)
+            .wait()
+            .unwrap()
+            .unwrap()
     }
 
     fn increment_nonce(&self, nonce: &mut U256) {

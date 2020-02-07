@@ -43,7 +43,7 @@ fn given_erc20_token_should_deploy_erc20_htlc_and_fund_htlc() {
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
 
     // Fund erc20 htlc
-    client.sign_and_send(|nonce, gas_price| UnsignedTransaction {
+    let tx = client.sign_and_send(|nonce, gas_price| UnsignedTransaction {
         nonce,
         gas_price,
         gas_limit: U256::from(100_000),
@@ -58,6 +58,9 @@ fn given_erc20_token_should_deploy_erc20_htlc_and_fund_htlc() {
         ),
     });
 
+    let transaction_receipt = client.receipt(tx);
+    log::debug!("used gas ERC20 fund {:?}", transaction_receipt.gas_used);
+
     // Check htlc funding
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
@@ -70,11 +73,12 @@ fn given_erc20_token_should_deploy_erc20_htlc_and_fund_htlc() {
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
 
     // Send correct secret to contract
-    client.send_data(
+    let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(SECRET.to_vec())),
         Erc20Htlc::redeem_tx_gas_limit().into(),
     );
+    log::debug!("used gas ERC20 redeem {:?}", transaction_receipt.gas_used);
 
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
@@ -236,7 +240,7 @@ fn given_deployed_erc20_htlc_when_expiry_time_not_yet_reached_should_revert_tx_w
     let transaction_receipt =
         client.send_data(htlc_address, None, Erc20Htlc::refund_tx_gas_limit().into());
     log::debug!(
-        "used gas ERC20 too early {:?}",
+        "used gas ERC20 refund too early {:?}",
         transaction_receipt.gas_used
     );
 
@@ -292,10 +296,14 @@ fn given_not_enough_tokens_when_redeemed_token_balances_dont_change() {
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
 
     // Send correct secret to contract
-    client.send_data(
+    let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(SECRET.to_vec())),
         Erc20Htlc::redeem_tx_gas_limit().into(),
+    );
+    log::debug!(
+        "used gas ERC20 redeemed not enough token {:?}",
+        transaction_receipt.gas_used
     );
 
     assert_eq!(
@@ -389,6 +397,8 @@ fn given_htlc_and_refund_should_emit_refund_log_msg() {
         500_000.into(), // This is for test purposes only
     );
 
+    log::debug!("used gas ERC20 refund {:?}", transaction_receipt.gas_used);
+
     // Should contain 2 logs: 1 for token transfer 1 for redeeming the htlc
     assert_that(&transaction_receipt.logs.len()).is_equal_to(2);
 
@@ -454,6 +464,11 @@ fn given_funded_erc20_htlc_when_redeemed_with_short_secret_should_revert_with_er
         Erc20Htlc::redeem_tx_gas_limit().into(),
     );
 
+    log::debug!(
+        "used gas ERC20 redeem short secret {:?}",
+        transaction_receipt.gas_used
+    );
+
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
         U256::from(400)
@@ -509,11 +524,13 @@ fn given_correct_zero_secret_htlc_should_redeem() {
     assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
 
     // Send short secret to contract
-    client.send_data(
+    let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(secret_vec)),
         Erc20Htlc::redeem_tx_gas_limit().into(),
     );
+
+    log::debug!("used gas ERC20 redeem {:?}", transaction_receipt.gas_used);
 
     assert_eq!(
         client.token_balance_of(token_contract, htlc_address),
@@ -577,6 +594,11 @@ fn given_short_zero_secret_htlc_should_revert_tx_with_error() {
             0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
         ])),
         Erc20Htlc::redeem_tx_gas_limit().into(),
+    );
+
+    log::debug!(
+        "used gas ERC20 redeem zero secret {:?}",
+        transaction_receipt.gas_used
     );
 
     assert_eq!(

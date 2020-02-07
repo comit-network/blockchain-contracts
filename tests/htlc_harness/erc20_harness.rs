@@ -90,6 +90,9 @@ pub fn erc20_harness<D: Docker>(
         Erc20Htlc::deploy_tx_gas_limit().into(),
     );
 
+    let transaction_receipt = alice_client.receipt(tx_id);
+    log::debug!("used gas ERC20 deploy {:?}", transaction_receipt.gas_used);
+
     (
         alice,
         bob,
