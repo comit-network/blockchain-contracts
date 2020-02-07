@@ -75,6 +75,7 @@ pub fn ether_harness<D: Docker>(
         )
         .into(),
         params.htlc_wei_value,
+        EtherHtlc::deploy_tx_gas_limit().into(),
     );
 
     (

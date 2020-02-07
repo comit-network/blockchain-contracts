@@ -121,9 +121,13 @@ impl ParityClient {
 
         let payload = format!("{}{}{}", function_identifier, address, amount);
 
-        self.send_data(contract, Some(Bytes(hex::decode(payload).unwrap())))
-            .gas_used
-            .expect("gas used is present")
+        self.send_data(
+            contract,
+            Some(Bytes(hex::decode(payload).unwrap())),
+            500_000.into(), // This is for test purposes only
+        )
+        .gas_used
+        .expect("gas used is present")
     }
 
     pub fn token_balance_of(&self, contract: Address, address: Address) -> U256 {
@@ -156,7 +160,12 @@ impl ParityClient {
         self.client.eth().balance(address, None).wait().unwrap()
     }
 
-    pub fn send_data(&self, to: Address, data: Option<Bytes>) -> TransactionReceipt {
+    pub fn send_data(
+        &self,
+        to: Address,
+        data: Option<Bytes>,
+        gas_limit: U256,
+    ) -> TransactionReceipt {
         let result_tx = self
             .client
             .personal()
@@ -164,7 +173,7 @@ impl ParityClient {
                 TransactionRequest {
                     from: *PARITY_DEV_ACCOUNT,
                     to: Some(to),
-                    gas: None,
+                    gas: Some(gas_limit),
                     gas_price: None,
                     value: None,
                     data,
@@ -214,11 +223,11 @@ impl ParityClient {
             .wait()
     }
 
-    pub fn deploy_htlc(&self, data: Bytes, value: U256) -> H256 {
+    pub fn deploy_htlc(&self, data: Bytes, value: U256, gas_limit: U256) -> H256 {
         self.sign_and_send(|nonce, gas_price| UnsignedTransaction {
             nonce,
             gas_price,
-            gas_limit: U256::from(500_000),
+            gas_limit,
             to: None,
             value,
             data: Some(data.clone()),

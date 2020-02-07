@@ -30,11 +30,15 @@ impl EtherHtlc {
         EtherHtlc(contract)
     }
 
-    pub fn deployment_gas_limit(&self) -> u64 {
+    pub fn deploy_tx_gas_limit() -> u64 {
         121_800
     }
 
-    pub fn tx_gas_limit() -> u64 {
+    pub fn redeem_tx_gas_limit() -> u64 {
+        100_000
+    }
+
+    pub fn refund_tx_gas_limit() -> u64 {
         100_000
     }
 }

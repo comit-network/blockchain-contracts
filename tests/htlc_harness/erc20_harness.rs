@@ -84,7 +84,11 @@ pub fn erc20_harness<D: Docker>(
         TokenQuantity(params.htlc_token_value.into()),
     );
 
-    let tx_id = alice_client.deploy_htlc(erc20_htlc.into(), U256::from(0));
+    let tx_id = alice_client.deploy_htlc(
+        erc20_htlc.into(),
+        U256::from(0),
+        Erc20Htlc::deploy_tx_gas_limit().into(),
+    );
 
     (
         alice,

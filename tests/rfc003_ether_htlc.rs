@@ -8,10 +8,10 @@ pub mod parity_client;
 use crate::htlc_harness::{
     ether_harness, sleep_until, CustomSizeSecret, EtherHarnessParams, Timestamp, SECRET,
 };
-use blockchain_contracts::ethereum::rfc003::INVALID_SECRET;
 use blockchain_contracts::ethereum::rfc003::REDEEMED_LOG_MSG;
 use blockchain_contracts::ethereum::rfc003::REFUNDED_LOG_MSG;
 use blockchain_contracts::ethereum::rfc003::TOO_EARLY;
+use blockchain_contracts::ethereum::rfc003::{EtherHtlc, INVALID_SECRET};
 use parity_client::ParityClient;
 use serde_json::json;
 use spectral::prelude::*;
@@ -33,7 +33,11 @@ fn given_deployed_htlc_when_redeemed_with_secret_then_money_is_transferred() {
     );
 
     // Send correct secret to contract
-    let transaction_receipt = client.send_data(htlc, Some(Bytes(SECRET.to_vec())));
+    let transaction_receipt = client.send_data(
+        htlc,
+        Some(Bytes(SECRET.to_vec())),
+        U256::from(EtherHtlc::redeem_tx_gas_limit()),
+    );
     log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
 
     assert_eq!(
@@ -64,7 +68,8 @@ fn given_deployed_htlc_when_refunded_after_expiry_time_then_money_is_refunded() 
 
     // Wait for the contract to expire
     sleep_until(harness_params.htlc_refund_timestamp);
-    let transaction_receipt = client.send_data(htlc, None);
+    let transaction_receipt =
+        client.send_data(htlc, None, U256::from(EtherHtlc::refund_tx_gas_limit()));
     log::debug!("used gas ETH refund {:?}", transaction_receipt.gas_used);
 
     assert_eq!(client.eth_balance_of(bob), U256::from(0));
@@ -87,7 +92,8 @@ fn given_deployed_htlc_when_refunded_too_early_should_revert_tx_with_error() {
     );
 
     // Don't wait for the timeout and don't send a secret
-    let transaction_receipt = client.send_data(htlc, None);
+    let transaction_receipt =
+        client.send_data(htlc, None, U256::from(EtherHtlc::refund_tx_gas_limit()));
     log::debug!("used gas ETH too early {:?}", transaction_receipt.gas_used);
 
     // Check refund did not happen
@@ -106,7 +112,11 @@ fn given_htlc_and_redeem_should_emit_redeem_log_msg_with_secret() {
         ether_harness(&docker, EtherHarnessParams::default());
 
     // Send correct secret to contract
-    let transaction_receipt = client.send_data(htlc, Some(Bytes(SECRET.to_vec())));
+    let transaction_receipt = client.send_data(
+        htlc,
+        Some(Bytes(SECRET.to_vec())),
+        EtherHtlc::redeem_tx_gas_limit().into(),
+    );
     log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
 }
 
@@ -119,7 +129,7 @@ fn given_htlc_and_refund_should_emit_refund_log_msg() {
 
     // Wait for the timelock to expire
     sleep_until(harness_params.htlc_refund_timestamp);
-    let transaction_receipt = client.send_data(htlc, None);
+    let transaction_receipt = client.send_data(htlc, None, EtherHtlc::refund_tx_gas_limit().into());
 
     let topic: H256 = REFUNDED_LOG_MSG.parse().unwrap();
     let Log { topics, data, .. } = assert_that(&transaction_receipt.logs)
@@ -153,6 +163,7 @@ fn given_deployed_htlc_when_redeem_with_short_secret_should_revert_with_error() 
     let transaction_receipt = client.send_data(
         htlc,
         Some(Bytes(vec![1u8, 2u8, 3u8, 4u8, 6u8, 6u8, 7u8, 9u8, 10u8])),
+        500_000.into(), // This is for test purposes only
     );
 
     assert_eq!(client.eth_balance_of(bob), U256::from(0));
@@ -186,7 +197,11 @@ fn given_correct_zero_secret_htlc_should_redeem() {
         U256::from("0400000000000000000")
     );
 
-    client.send_data(htlc, Some(Bytes(secret_vec)));
+    client.send_data(
+        htlc,
+        Some(Bytes(secret_vec)),
+        EtherHtlc::redeem_tx_gas_limit().into(),
+    );
 
     assert_eq!(
         client.eth_balance_of(bob),
@@ -222,6 +237,7 @@ fn given_short_zero_secret_htlc_should_revert_tx_with_error() {
             0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
             0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
         ])),
+        500_000.into(), // This is for test purposes only
     );
 
     assert_eq!(client.eth_balance_of(bob), U256::from(0));
@@ -248,7 +264,11 @@ fn given_invalid_secret_htlc_should_revert_tx_with_error() {
 
     // Send incorrect secret to contract
     // Send incorrect secret to contract
-    let transaction_receipt = client.send_data(htlc, Some(Bytes(b"I'm a h4x0r".to_vec())));
+    let transaction_receipt = client.send_data(
+        htlc,
+        Some(Bytes(b"I'm a h4x0r".to_vec())),
+        500_000.into(), // This is for test purposes only
+    );
     log::debug!(
         "used gas ETH invalid secret {:?}",
         transaction_receipt.gas_used
