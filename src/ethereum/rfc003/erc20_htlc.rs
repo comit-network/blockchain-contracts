@@ -53,7 +53,7 @@ impl Erc20Htlc {
     pub fn refund_tx_gas_limit() -> u64 {
         // 20_705 consumed in local test for successful refunding
         // 21_058 to 21_673 consumed in local test for failed refunding
-        50_000
+        100_000
     }
 
     /// Constructs the payload to transfer `Erc20` tokens to a `to_address`
