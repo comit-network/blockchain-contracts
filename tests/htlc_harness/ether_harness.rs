@@ -78,6 +78,9 @@ pub fn ether_harness<D: Docker>(
         EtherHtlc::deploy_tx_gas_limit().into(),
     );
 
+    let transaction_receipt = alice_client.receipt(tx_id);
+    log::debug!("used gas Ether deploy {:?}", transaction_receipt.gas_used);
+
     (
         alice,
         bob,
