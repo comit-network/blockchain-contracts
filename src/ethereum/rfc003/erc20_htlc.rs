@@ -34,16 +34,26 @@ impl Erc20Htlc {
         Erc20Htlc(contract)
     }
 
-    pub fn deployment_gas_limit(&self) -> u64 {
-        167_800
-    }
-
-    pub fn tx_gas_limit() -> u64 {
-        100_000
+    pub fn deploy_tx_gas_limit() -> u64 {
+        // 151_220 consumed in local test
+        160_000
     }
 
     pub fn fund_tx_gas_limit() -> u64 {
+        // 51_761 consumed in local test
         100_000
+    }
+
+    pub fn redeem_tx_gas_limit() -> u64 {
+        // 29_840, 28_816 consumed in local test for successful redeeming
+        // 15_853 to 22_031 consumed in local test for failed redeeming
+        100_000
+    }
+
+    pub fn refund_tx_gas_limit() -> u64 {
+        // 20_705 consumed in local test for successful refunding
+        // 21_058 to 21_673 consumed in local test for failed refunding
+        50_000
     }
 
     /// Constructs the payload to transfer `Erc20` tokens to a `to_address`

@@ -90,11 +90,6 @@ impl ParityClient {
             .unwrap()
             .unwrap();
 
-        log::debug!(
-            "Deploying the contract consumed {} gas",
-            receipt.gas_used.expect("Gas used is present")
-        );
-
         receipt.contract_address.unwrap()
     }
 
