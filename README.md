@@ -7,7 +7,7 @@
 [COMIT](https://comit.network) is an open protocol facilitating cross-blockchain applications.
 For example, with [COMIT](https://comit.network) you can exchange Bitcoin for Ether or any ERC20 token directly with another person.
 
-This repository contains the the assembly/script code of blockchain contracts used in the COMIT protocol.
+This repository contains the assembly/script code of blockchain contracts used in the COMIT protocol.
 
 If you wish to do an atomic swap on your machine or to integrate COMIT into an application (e.g. a DEX) please take a look at the [Getting Started section](https://comit.network/docs/getting-started/create-comit-app/) of the COMIT documentation.
 If you have any questions, feel free to [reach out to the team in our Gitter chat](https://gitter.im/comit-network/community)!
@@ -20,7 +20,7 @@ If you have any questions, feel free to [reach out to the team in our Gitter cha
 
 # Blockchain contracts
 
-Host the assembly/script code of blockchain contracts used in the [COMIT reference implementation](https://github.com/comit-network/comit-rs).
+Hosts the assembly/script code of blockchain contracts used in the [COMIT reference implementation](https://github.com/comit-network/comit-rs).
 For more information about the contracts please check the [COMIT protocol specification](https://github.com/comit-network/RFCs):
 
 * [Bitcoin contract spec](https://github.com/comit-network/RFCs/blob/master/RFC-005-SWAP-Basic-Bitcoin.adoc)
