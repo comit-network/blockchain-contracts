@@ -671,6 +671,119 @@ fn given_invalid_secret_htlc_should_revert_tx_with_error() {
     assert_return_data(&client, transaction_receipt, INVALID_SECRET);
 }
 
+#[test]
+fn low_gas_price_redeem() {
+    let docker = Cli::default();
+    let (alice, bob, htlc_address, token_contract, token_amount, client, _handle, _container) =
+        erc20_harness(&docker, Erc20HarnessParams::default());
+
+    // Fund erc20 htlc
+    let tx = client.sign_and_send(|nonce, gas_price| UnsignedTransaction {
+        nonce,
+        gas_price,
+        gas_limit: U256::from(100_000),
+        to: Some(token_contract),
+        value: U256::from(0),
+        data: Some(
+            Erc20Htlc::transfer_erc20_tx_payload(
+                TokenQuantity(token_amount.into()),
+                Address(htlc_address.into()),
+            )
+            .into(),
+        ),
+    });
+
+    let transaction_receipt = client.receipt(tx);
+    log::debug!("used gas ERC20 fund {:?}", transaction_receipt.gas_used);
+
+    // Check htlc funding
+    assert_eq!(
+        client.token_balance_of(token_contract, htlc_address),
+        U256::from(400)
+    );
+    assert_eq!(
+        client.token_balance_of(token_contract, alice),
+        U256::from(600)
+    );
+    assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
+
+    // Send correct secret to contract
+    let transaction_receipt = client.send_data(
+        htlc_address,
+        Some(Bytes(SECRET.to_vec())),
+        U256::from(29840 + 24000 + 5800),
+    );
+    log::debug!("used gas ERC20 redeem {:?}", transaction_receipt.gas_used);
+
+    assert_eq!(
+        client.token_balance_of(token_contract, htlc_address),
+        U256::from(400)
+    );
+    assert_eq!(
+        client.token_balance_of(token_contract, alice),
+        U256::from(600)
+    );
+    assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
+}
+
+#[test]
+fn correct_gas_price_redeem() {
+    let docker = Cli::default();
+    let (alice, bob, htlc_address, token_contract, token_amount, client, _handle, _container) =
+        erc20_harness(&docker, Erc20HarnessParams::default());
+
+    // Fund erc20 htlc
+    let tx = client.sign_and_send(|nonce, gas_price| UnsignedTransaction {
+        nonce,
+        gas_price,
+        gas_limit: U256::from(100_000),
+        to: Some(token_contract),
+        value: U256::from(0),
+        data: Some(
+            Erc20Htlc::transfer_erc20_tx_payload(
+                TokenQuantity(token_amount.into()),
+                Address(htlc_address.into()),
+            )
+            .into(),
+        ),
+    });
+
+    let transaction_receipt = client.receipt(tx);
+    log::debug!("used gas ERC20 fund {:?}", transaction_receipt.gas_used);
+
+    // Check htlc funding
+    assert_eq!(
+        client.token_balance_of(token_contract, htlc_address),
+        U256::from(400)
+    );
+    assert_eq!(
+        client.token_balance_of(token_contract, alice),
+        U256::from(600)
+    );
+    assert_eq!(client.token_balance_of(token_contract, bob), U256::from(0));
+
+    // Send correct secret to contract
+    let transaction_receipt = client.send_data(
+        htlc_address,
+        Some(Bytes(SECRET.to_vec())),
+        U256::from(29840 + 24000 + 5900),
+    );
+    log::debug!("used gas ERC20 redeem {:?}", transaction_receipt.gas_used);
+
+    assert_eq!(
+        client.token_balance_of(token_contract, htlc_address),
+        U256::from(0)
+    );
+    assert_eq!(
+        client.token_balance_of(token_contract, alice),
+        U256::from(600)
+    );
+    assert_eq!(
+        client.token_balance_of(token_contract, bob),
+        U256::from(400)
+    );
+}
+
 fn assert_return_data(
     client: &ParityClient,
     transaction_receipt: TransactionReceipt,

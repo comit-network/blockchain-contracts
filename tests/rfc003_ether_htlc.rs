@@ -303,3 +303,49 @@ fn assert_return_data(
         _ => assert_that(&true).is_false(),
     };
 }
+
+#[test]
+fn low_gas_price_redeem() {
+    let docker = Cli::default();
+    let (_alice, bob, htlc, client, _handle, _container) =
+        ether_harness(&docker, EtherHarnessParams::default());
+
+    // Send correct secret to contract
+    let transaction_receipt =
+        client.send_data(htlc, Some(Bytes(SECRET.to_vec())), U256::from(31082 + 2399));
+    log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
+
+    assert_eq!(client.eth_balance_of(bob), U256::from("0"));
+
+    assert_eq!(
+        client.eth_balance_of(htlc),
+        U256::from("0400000000000000000")
+    );
+}
+
+#[test]
+fn correct_gas_price_redeem() {
+    let docker = Cli::default();
+    let (_alice, bob, htlc, client, _handle, _container) =
+        ether_harness(&docker, EtherHarnessParams::default());
+
+    // Send correct secret to contract
+    let transaction_receipt = client.send_data(
+        htlc,
+        Some(Bytes(SECRET.to_vec())),
+        U256::from(31082 + 24000),
+    );
+    log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
+
+    assert_eq!(
+        client.eth_balance_of(bob),
+        U256::from("0400000000000000000")
+    );
+    assert_eq!(client.eth_balance_of(htlc), U256::from(0));
+
+    let topic: H256 = REDEEMED_LOG_MSG.parse().unwrap();
+    let Log { topics, data, .. } = &transaction_receipt.logs[0];
+
+    assert_that(topics).contains(topic);
+    assert_that(data).is_equal_to(Bytes(SECRET.to_vec()));
+}

@@ -47,7 +47,7 @@ impl Erc20Htlc {
     pub fn redeem_tx_gas_limit() -> u64 {
         // 29_840, 28_816 consumed in local test for successful redeeming
         // 15_853 to 22_031 consumed in local test for failed redeeming
-        100_000
+        29840 + 24000 + 5900
     }
 
     pub fn refund_tx_gas_limit() -> u64 {

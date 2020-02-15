@@ -38,7 +38,7 @@ impl EtherHtlc {
     pub fn redeem_tx_gas_limit() -> u64 {
         // 31_082 consumed in local test for successful redeeming
         // 21_809 consumed in local test for failed redeeming
-        100_000
+        31082 + 24000
     }
 
     pub fn refund_tx_gas_limit() -> u64 {
