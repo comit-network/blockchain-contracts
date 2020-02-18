@@ -51,7 +51,9 @@ impl EtherHtlc {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use hex::{FromHex, ToHex};
     use regex::bytes::Regex;
+    use spectral::assert_that;
 
     const SECRET_HASH: [u8; 32] = [
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -94,5 +96,32 @@ mod tests {
             .expect("Could not create regex")
             .find(&compiled_code)
             .expect("Could not find secret hash in hex code");
+    }
+
+    #[test]
+    fn test_replaced_placeholders_for_rfc_example() {
+        let redeem_identity =
+            <[u8; 20]>::from_hex("53fd2cac865d3aa1ad6fbdebaa00802c94239fba").unwrap();
+        let refund_identity =
+            <[u8; 20]>::from_hex("0f59e9e105be01d5e2206792a267406f255c5ea5").unwrap();
+        let secret_hash = <[u8; 32]>::from_hex(
+            "ac5a18da6431ed256965b873ef49dc15a70a0a66e2d28d0c226b5db040123727",
+        )
+        .unwrap();
+        let expiry = 1_552_263_040;
+
+        let htlc = EtherHtlc::new(
+            expiry,
+            Address(refund_identity),
+            Address(redeem_identity),
+            secret_hash,
+        );
+
+        let compiled_code = htlc.0;
+        let contract_string = compiled_code.encode_hex::<String>();
+
+        let expected_contract_code = "61012861000f6000396101286000f3361561007957602036141561004f57602060006000376020602160206000600060026048f17fac5a18da6431ed256965b873ef49dc15a70a0a66e2d28d0c226b5db04012372760215114166100ae575b7f696e76616c69645365637265740000000000000000000000000000000000000060005260206000fd5b42635c85a780106100eb577f746f6f4561726c7900000000000000000000000000000000000000000000000060005260206000fd5b7f72656465656d656400000000000000000000000000000000000000000000000060206000a17353fd2cac865d3aa1ad6fbdebaa00802c94239fbaff5b7f726566756e64656400000000000000000000000000000000000000000000000060006000a1730f59e9e105be01d5e2206792a267406f255c5ea5ff";
+
+        assert_that!(contract_string.as_str()).is_equal_to(expected_contract_code)
     }
 }
