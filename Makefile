@@ -74,28 +74,16 @@ doc:
 
 check_format: check_rust_format check_toml_format
 
-STAGED_FILES = $(shell git diff --staged --name-only)
-STAGED_RUST_FILES = $(filter %.rs,$(STAGED_FILES))
-STAGED_TOML_FILES = $(filter %Cargo.toml,$(STAGED_FILES))
-
 format: install_rustfmt install_tomlfmt
-ifneq (,$(STAGED_RUST_FILES))
 	$(CARGO_NIGHTLY) fmt
-endif
-ifneq (,$(STAGED_TOML_FILES))
 	$(CARGO) tomlfmt -p Cargo.toml
-endif
 
 force_format: install_rustfmt install_tomlfmt
 	$(CARGO_NIGHTLY) fmt
 	$(CARGO) tomlfmt -p Cargo.toml
 
 check_rust_format: install_rustfmt
-ifneq (,$(STAGED_RUST_FILES))
 	$(CARGO_NIGHTLY) fmt -- --check
-endif
 
 check_toml_format: install_tomlfmt
-ifneq (,$(STAGED_TOML_FILES))
 	$(CARGO) tomlfmt -d -p Cargo.toml
-endif
