@@ -6,7 +6,7 @@ use rust_bitcoin::{
     Address, Amount, OutPoint, Script, SigHashType, Transaction, TxIn, TxOut,
 };
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Error {
     OverflowingFee,
     FeeHigherThanInputValue,

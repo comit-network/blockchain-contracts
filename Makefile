@@ -1,7 +1,7 @@
 RUSTUP = rustup
 
-# The CI should pass a RUST_TOOLCHAIN env var, if not we default to our MSRV 1.39.0
-RUST_TOOLCHAIN ?= 1.39.0
+# The CI should pass a RUST_TOOLCHAIN env var, if not we default to our MSRV 1.40.0
+RUST_TOOLCHAIN ?= 1.40.0
 TOOLCHAIN = $(RUST_TOOLCHAIN)
 CARGO = $(RUSTUP) run --install $(TOOLCHAIN) cargo --color always
 
@@ -64,17 +64,7 @@ build:
 	$(CARGO) build --all --all-targets $(BUILD_ARGS)
 
 clippy: install_clippy
-	$(CARGO) clippy \
-	    --all-targets \
-	    -- \
-	    -W clippy::cast_possible_truncation \
-	    -W clippy::cast_sign_loss \
-	    -W clippy::fallible_impl_from \
-	    -W clippy::cast_precision_loss \
-	    -W clippy::cast_possible_wrap \
-	    -W clippy::print_stdout \
-	    -W clippy::dbg_macro \
-	    -D warnings
+	$(CARGO) clippy --all-targets -- -D warnings
 
 test:
 	$(CARGO) test --all
@@ -84,28 +74,16 @@ doc:
 
 check_format: check_rust_format check_toml_format
 
-STAGED_FILES = $(shell git diff --staged --name-only)
-STAGED_RUST_FILES = $(filter %.rs,$(STAGED_FILES))
-STAGED_TOML_FILES = $(filter %Cargo.toml,$(STAGED_FILES))
-
 format: install_rustfmt install_tomlfmt
-ifneq (,$(STAGED_RUST_FILES))
 	$(CARGO_NIGHTLY) fmt
-endif
-ifneq (,$(STAGED_TOML_FILES))
 	$(CARGO) tomlfmt -p Cargo.toml
-endif
 
 force_format: install_rustfmt install_tomlfmt
 	$(CARGO_NIGHTLY) fmt
 	$(CARGO) tomlfmt -p Cargo.toml
 
 check_rust_format: install_rustfmt
-ifneq (,$(STAGED_RUST_FILES))
 	$(CARGO_NIGHTLY) fmt -- --check
-endif
 
 check_toml_format: install_tomlfmt
-ifneq (,$(STAGED_TOML_FILES))
 	$(CARGO) tomlfmt -d -p Cargo.toml
-endif

@@ -42,10 +42,10 @@ impl FitIntoPlaceholderSlice for hash160::Hash {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct SecretHash(pub [u8; 32]);
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct EthereumTimestamp(pub u32);
 
 #[derive(Debug)]

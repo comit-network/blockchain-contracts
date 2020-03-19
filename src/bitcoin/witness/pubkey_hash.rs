@@ -46,7 +46,7 @@ impl<'a> TryFrom<&'a [u8]> for PubkeyHash {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum FromHexError {
     HexConversion(hex::FromHexError),
     HashConversion(rust_bitcoin::hashes::error::Error),

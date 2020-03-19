@@ -117,9 +117,7 @@ fn fund_htlc(
 
     let htlc_address = htlc.compute_address(Network::Regtest);
 
-    let txid = client
-        .send_to_address(&htlc_address.clone(), amount)
-        .unwrap();
+    let txid = client.send_to_address(&htlc_address, amount).unwrap();
 
     client.generate(1).unwrap();
 
