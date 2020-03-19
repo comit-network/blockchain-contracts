@@ -1,4 +1,3 @@
-extern crate regex;
 use crate::calculate_offsets::{
     calc_offset, concat_path,
     ethereum::rfc003::{compile_contract::compile, Error},

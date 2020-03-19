@@ -268,7 +268,7 @@ impl Client {
             Network::Regtest,
         );
 
-        let txid = self.send_to_address(&address.clone(), amount).unwrap();
+        let txid = self.send_to_address(&address, amount).unwrap();
 
         self.generate(1).unwrap();
 
