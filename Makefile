@@ -1,7 +1,7 @@
 RUSTUP = rustup
 
-# The CI should pass a RUST_TOOLCHAIN env var, if not we default to our MSRV 1.39.0
-RUST_TOOLCHAIN ?= 1.39.0
+# The CI should pass a RUST_TOOLCHAIN env var, if not we default to our MSRV 1.40.0
+RUST_TOOLCHAIN ?= 1.40.0
 TOOLCHAIN = $(RUST_TOOLCHAIN)
 CARGO = $(RUSTUP) run --install $(TOOLCHAIN) cargo --color always
 
