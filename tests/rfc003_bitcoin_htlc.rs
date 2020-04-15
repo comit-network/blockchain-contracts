@@ -153,7 +153,7 @@ fn redeem_htlc_with_secret() {
         inputs: vec![PrimedInput::new(
             vout,
             input_amount,
-            htlc.unlock_with_secret(&crate::ethereum_helper::SECP, secret_key, SECRET.clone()),
+            htlc.unlock_with_secret(&crate::ethereum_helper::SECP, secret_key, *SECRET),
         )],
         output_address: alice_addr.clone(),
     }

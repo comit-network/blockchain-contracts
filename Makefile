@@ -5,7 +5,7 @@ RUST_TOOLCHAIN ?= 1.40.0
 TOOLCHAIN = $(RUST_TOOLCHAIN)
 CARGO = $(RUSTUP) run --install $(TOOLCHAIN) cargo --color always
 
-NIGHTLY_TOOLCHAIN = nightly-2019-12-30
+NIGHTLY_TOOLCHAIN = nightly-2020-04-10
 CARGO_NIGHTLY = $(RUSTUP) run --install $(NIGHTLY_TOOLCHAIN) cargo --color always
 
 GIT_HOOKS_PATH = ".githooks"
