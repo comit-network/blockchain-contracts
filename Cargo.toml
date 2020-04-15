@@ -1,6 +1,6 @@
 [package]
 name = "blockchain_contracts"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["CoBloX developers <team@coblox.tech>"]
 edition = "2018"
 description = "Blockchain contracts used by COMIT-network daemons to execute cryptographic protocols."
