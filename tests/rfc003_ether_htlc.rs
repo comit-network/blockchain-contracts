@@ -8,10 +8,10 @@ pub mod parity_client;
 use crate::htlc_harness::{
     ether_harness, sleep_until, CustomSizeSecret, EtherHarnessParams, Timestamp, SECRET,
 };
-use blockchain_contracts::ethereum::rfc003::REDEEMED_LOG_MSG;
-use blockchain_contracts::ethereum::rfc003::REFUNDED_LOG_MSG;
-use blockchain_contracts::ethereum::rfc003::TOO_EARLY;
-use blockchain_contracts::ethereum::rfc003::{EtherHtlc, INVALID_SECRET};
+use blockchain_contracts::ethereum::REDEEMED_LOG_MSG;
+use blockchain_contracts::ethereum::REFUNDED_LOG_MSG;
+use blockchain_contracts::ethereum::TOO_EARLY;
+use blockchain_contracts::ethereum::{EtherHtlc, INVALID_SECRET};
 use parity_client::ParityClient;
 use serde_json::json;
 use spectral::prelude::*;

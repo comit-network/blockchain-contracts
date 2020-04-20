@@ -3,7 +3,7 @@ use crate::{
     htlc_harness::{new_account, timestamp::Timestamp, SECRET_HASH},
     parity_client::ParityClient,
 };
-use blockchain_contracts::ethereum::rfc003::EtherHtlc;
+use blockchain_contracts::ethereum::EtherHtlc;
 use std::sync::Arc;
 use testcontainers::{images::parity_parity::ParityEthereum, Container, Docker};
 use web3::{

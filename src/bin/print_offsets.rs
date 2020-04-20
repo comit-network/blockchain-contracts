@@ -79,7 +79,7 @@ impl From<self::calculate_offsets::ethereum::Error> for Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use blockchain_contracts::ethereum::rfc003::{erc20_htlc, ether_htlc};
+    use blockchain_contracts::ethereum::{erc20_htlc, ether_htlc};
 
     #[test]
     fn ether_contract_template_matches_template_in_calculate_offsets() -> Result<(), Error> {
