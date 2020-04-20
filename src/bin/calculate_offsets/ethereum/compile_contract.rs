@@ -1,4 +1,4 @@
-use crate::calculate_offsets::{check_bin_in_path, ethereum::rfc003::Error};
+use crate::calculate_offsets::{check_bin_in_path, ethereum::Error};
 use regex::Regex;
 use std::{
     env::var,

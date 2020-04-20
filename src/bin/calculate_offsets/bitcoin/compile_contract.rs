@@ -1,4 +1,4 @@
-use crate::calculate_offsets::{bitcoin::rfc003::Error, check_bin_in_path};
+use crate::calculate_offsets::{bitcoin::Error, check_bin_in_path};
 use std::{
     ffi::OsStr,
     io::Write,

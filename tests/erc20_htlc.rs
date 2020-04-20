@@ -13,13 +13,13 @@ use crate::{
 };
 
 use crate::parity_client::ParityClient;
-use blockchain_contracts::ethereum::rfc003::erc20_htlc::Erc20Htlc;
-use blockchain_contracts::ethereum::rfc003::INVALID_SECRET;
-use blockchain_contracts::ethereum::rfc003::REDEEMED_LOG_MSG;
-use blockchain_contracts::ethereum::rfc003::REFUNDED_LOG_MSG;
-use blockchain_contracts::ethereum::rfc003::TOO_EARLY;
+use blockchain_contracts::ethereum::erc20_htlc::Erc20Htlc;
 use blockchain_contracts::ethereum::Address;
 use blockchain_contracts::ethereum::TokenQuantity;
+use blockchain_contracts::ethereum::INVALID_SECRET;
+use blockchain_contracts::ethereum::REDEEMED_LOG_MSG;
+use blockchain_contracts::ethereum::REFUNDED_LOG_MSG;
+use blockchain_contracts::ethereum::TOO_EARLY;
 use serde_json::json;
 use spectral::prelude::*;
 use testcontainers::clients::Cli;

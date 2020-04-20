@@ -13,8 +13,8 @@ use crate::{
 };
 use bitcoin_helper::new_tc_bitcoincore_client;
 use blockchain_contracts::bitcoin::{
-    rfc003::bitcoin_htlc::BitcoinHtlc,
     witness::{PrimedInput, PrimedTransaction, UnlockParameters, Witness},
+    BitcoinHtlc,
 };
 use rust_bitcoin::Txid;
 use rust_bitcoin::{
@@ -32,7 +32,7 @@ use testcontainers::{clients::Cli, images::coblox_bitcoincore::BitcoinCore, Dock
 /// except that we want to insert our "CustomSizeSecret" on the witness
 /// stack.
 ///
-/// [method]: blockchain_contracts::bitcoin::rfc003::bitcoin_htlc::
+/// [method]: blockchain_contracts::bitcoin::bitcoin_htlc::
 /// BitcoinHtlc#unlock_with_secret
 fn unlock_with_custom_size_secret(
     htlc: BitcoinHtlc,
