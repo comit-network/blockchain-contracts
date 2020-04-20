@@ -1,6 +1,6 @@
 use crate::calculate_offsets::{
     calc_offset, concat_path,
-    ethereum::rfc003::{compile_contract::compile, Error},
+    ethereum::{compile_contract::compile, Error},
     metadata::Metadata,
     placeholder_config::{Placeholder, PlaceholderConfig},
     Contract,
@@ -66,7 +66,7 @@ impl EthereumContract {
 }
 
 impl Contract for EthereumContract {
-    type Error = crate::calculate_offsets::ethereum::rfc003::Error;
+    type Error = crate::calculate_offsets::ethereum::Error;
 
     fn compile<S: AsRef<OsStr>>(template_folder: S) -> Result<EthereumContract, Error> {
         let mut bytes = compile(concat_path(&template_folder, "deploy_header.asm"))?;
