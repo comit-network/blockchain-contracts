@@ -30,7 +30,7 @@ pretty_env_logger = "0.4"
 reqwest = { version = "0.10", features = ["json", "blocking"] }
 rust-crypto = "0.2"
 spectral = "0.6"
-testcontainers = "0.8"
+testcontainers = "0.9"
 tiny-keccak = { version = "2.0", features = ["keccak"] }
 web3 = { version = "0.10", default-features = false, features = ["http"] }
 
