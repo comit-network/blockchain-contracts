@@ -1,0 +1,19 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "00:00"
+    timezone: Australia/Brisbane
+  labels:
+  - dependencies
+  allow:
+  - dependency-type: direct
+  ignore:
+  - dependency-name: primitive-types
+    versions:
+    - ">= 0"
+  - dependency-name: rlp
+    versions:
+    - ">= 0"
