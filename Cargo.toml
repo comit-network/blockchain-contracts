@@ -44,7 +44,7 @@ version = "0.4.2"
 # This dependency version is set by rust-bitcoin but we need the "recovery" feature on
 [dev-dependencies.secp256k1]
 features = ["recovery"]
-version = "0.17.1"
+version = "0.19.0"
 
 
 [build-dependencies]
