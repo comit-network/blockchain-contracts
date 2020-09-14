@@ -202,18 +202,17 @@ fn refund_htlc() {
 
     let error = client
         .send_raw_transaction(refund_tx_hex.clone())
-        .unwrap_err();
+        .unwrap_err()
+        .downcast::<RpcError>()
+        .unwrap();
 
-    match error {
-        bitcoin_helper::Error::Rpc(error) => assert_eq!(
-            error,
-            RpcError {
-                code: -26,
-                message: "non-final (code 64)".to_string()
-            }
-        ),
-        _ => panic!(format!("Unexpected error received: {:?}", error)),
-    }
+    assert_eq!(
+        error,
+        RpcError {
+            code: -26,
+            message: "non-final (code 64)".to_string()
+        }
+    );
 
     loop {
         let time = client.get_blockchain_info().unwrap().mediantime;
@@ -269,18 +268,19 @@ fn redeem_htlc_with_long_secret() {
 
     let rpc_redeem_txid = client.send_raw_transaction(redeem_tx_hex);
 
-    let error = assert_that(&rpc_redeem_txid).is_err().subject;
+    let error = assert_that(&rpc_redeem_txid)
+        .is_err()
+        .subject
+        .downcast_ref::<RpcError>()
+        .unwrap();
 
-    match error {
-        bitcoin_helper::Error::Rpc(error) => assert_eq!(
-            *error,
-            RpcError {
-                code: -26,
-                message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
-            }
-        ),
-        _ => panic!(format!("Unexpected error received: {:?}", error)),
-    }
+    assert_eq!(
+        *error,
+        RpcError {
+            code: -26,
+            message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
+        }
+    )
 }
 
 #[test]
@@ -315,16 +315,17 @@ fn redeem_htlc_with_short_secret() {
 
     let rpc_redeem_txid = client.send_raw_transaction(redeem_tx_hex);
 
-    let error = assert_that(&rpc_redeem_txid).is_err().subject;
+    let error = assert_that(&rpc_redeem_txid)
+        .is_err()
+        .subject
+        .downcast_ref::<RpcError>()
+        .unwrap();
 
-    match error {
-        bitcoin_helper::Error::Rpc(error) => assert_eq!(
-            *error,
-            RpcError {
-                code: -26,
-                message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
-            }
-        ),
-        _ => panic!(format!("Unexpected error received: {:?}", error)),
-    }
+    assert_eq!(
+        *error,
+        RpcError {
+            code: -26,
+            message: "non-mandatory-script-verify-flag (Script failed an OP_EQUALVERIFY operation) (code 64)".to_string()
+        }
+    )
 }

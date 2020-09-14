@@ -1,6 +1,7 @@
 #![warn(unused_extern_crates, missing_debug_implementations)]
 #![forbid(unsafe_code)]
 
+use anyhow::{Context, Result};
 use rust_bitcoin::hashes::hex::FromHex;
 use rust_bitcoin::Txid;
 use rust_bitcoin::{
@@ -34,9 +35,11 @@ pub struct RpcError {
 
 impl std::fmt::Display for RpcError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "RPC failed with: {}", self.message)
     }
 }
+
+impl std::error::Error for RpcError {}
 
 impl<T> JsonRpcRequest<T> {
     fn new(method: &str, params: T) -> Self {
@@ -49,8 +52,8 @@ impl<T> JsonRpcRequest<T> {
     }
 }
 
-fn serialize<T: Serialize>(t: T) -> Result<serde_json::Value, Error> {
-    let value = serde_json::to_value(t).map_err(Error::Serialize)?;
+fn serialize<T: Serialize>(t: T) -> Result<serde_json::Value> {
+    let value = serde_json::to_value(t).context("failed to serialize value")?;
 
     Ok(value)
 }
@@ -61,46 +64,12 @@ pub struct Client {
     auth: RpcAuth,
 }
 
-#[derive(Debug)]
-pub enum Error {
-    Address(rust_bitcoin::util::address::Error),
-    Reqwest(reqwest::Error),
-    Encode(rust_bitcoin::consensus::encode::Error),
-    Rpc(RpcError),
-    Serialize(serde_json::Error),
-    Hash(rust_bitcoin::hashes::hex::Error),
-}
-
-impl From<reqwest::Error> for Error {
-    fn from(err: reqwest::Error) -> Self {
-        Error::Reqwest(err)
-    }
-}
-
-impl From<rust_bitcoin::util::address::Error> for Error {
-    fn from(err: rust_bitcoin::util::address::Error) -> Self {
-        Error::Address(err)
-    }
-}
-
-impl From<rust_bitcoin::consensus::encode::Error> for Error {
-    fn from(err: rust_bitcoin::consensus::encode::Error) -> Self {
-        Error::Encode(err)
-    }
-}
-
-impl From<rust_bitcoin::hashes::hex::Error> for Error {
-    fn from(err: rust_bitcoin::hashes::hex::Error) -> Self {
-        Error::Hash(err)
-    }
-}
-
 impl Client {
     pub fn new(endpoint: String, auth: RpcAuth) -> Client {
         Client { endpoint, auth }
     }
 
-    pub fn get_new_address(&self) -> Result<Address, Error> {
+    pub fn get_new_address(&self) -> Result<Address> {
         let request = JsonRpcRequest::<Vec<()>>::new("getnewaddress", Vec::new());
 
         Ok(reqwest::blocking::Client::new()
@@ -113,7 +82,7 @@ impl Client {
             .expect("getnewaddress response result is null"))
     }
 
-    pub fn generate(&self, num: u32) -> Result<(), Error> {
+    pub fn generate(&self, num: u32) -> Result<()> {
         let request = JsonRpcRequest::new("generate", vec![serialize(num)?]);
 
         let _ = reqwest::blocking::Client::new()
@@ -125,7 +94,7 @@ impl Client {
         Ok(())
     }
 
-    pub fn send_raw_transaction(&self, hex: String) -> Result<sha256d::Hash, Error> {
+    pub fn send_raw_transaction(&self, hex: String) -> Result<sha256d::Hash> {
         let request = JsonRpcRequest::new("sendrawtransaction", vec![serialize(hex)?]);
 
         let response = reqwest::blocking::Client::new()
@@ -139,7 +108,7 @@ impl Client {
             JsonRpcResponse {
                 result: None,
                 error: Some(error),
-            } => Err(Error::Rpc(error)),
+            } => Err(error.into()),
             JsonRpcResponse {
                 result: Some(result),
                 error: None,
@@ -148,7 +117,7 @@ impl Client {
         }
     }
 
-    pub fn get_raw_transaction(&self, txid: &Txid) -> Result<Transaction, Error> {
+    pub fn get_raw_transaction(&self, txid: &Txid) -> Result<Transaction> {
         let request = JsonRpcRequest::new("getrawtransaction", vec![serialize(txid)?]);
 
         let response: JsonRpcResponse<String> = reqwest::blocking::Client::new()
@@ -165,7 +134,7 @@ impl Client {
         )?)?)
     }
 
-    pub fn get_blockchain_info(&self) -> Result<BlockchainInfo, Error> {
+    pub fn get_blockchain_info(&self) -> Result<BlockchainInfo> {
         let request = JsonRpcRequest::<Vec<()>>::new("getblockchaininfo", vec![]);
 
         Ok(reqwest::blocking::Client::new()
@@ -178,7 +147,7 @@ impl Client {
             .expect("getblockchaininfo response result is null"))
     }
 
-    pub fn list_unspent(&self, addresses: Option<&[Address]>) -> Result<Vec<Unspent>, Error> {
+    pub fn list_unspent(&self, addresses: Option<&[Address]>) -> Result<Vec<Unspent>> {
         let request = JsonRpcRequest::new(
             "listunspent",
             vec![
@@ -198,7 +167,7 @@ impl Client {
             .expect("list_unspent response result is null"))
     }
 
-    pub fn send_to_address(&self, address: &Address, amount: Amount) -> Result<Txid, Error> {
+    pub fn send_to_address(&self, address: &Address, amount: Amount) -> Result<Txid> {
         let request = JsonRpcRequest::new(
             "sendtoaddress",
             vec![serialize(address)?, serialize(amount.as_btc())?],

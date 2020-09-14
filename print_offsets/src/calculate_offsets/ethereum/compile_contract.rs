@@ -1,4 +1,5 @@
-use crate::calculate_offsets::{check_bin_in_path, ethereum::Error};
+use crate::calculate_offsets::check_bin_in_path;
+use anyhow::{Context, Result};
 use regex::Regex;
 use std::path::Path;
 use std::{
@@ -6,7 +7,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-pub fn compile<S: AsRef<Path>>(file_path: S) -> Result<Vec<u8>, Error> {
+pub fn compile<S: AsRef<Path>>(file_path: S) -> Result<Vec<u8>> {
     let solc_bin = var("SOLC_BIN");
 
     let mut solc = match solc_bin {
@@ -33,7 +34,9 @@ pub fn compile<S: AsRef<Path>>(file_path: S) -> Result<Vec<u8>, Error> {
         }
     };
 
-    let mut file = ::std::fs::File::open(file_path)?;
+    let file_path = file_path.as_ref();
+    let mut file = ::std::fs::File::open(file_path)
+        .with_context(|| format!("failed to open contract file {}", file_path.display()))?;
 
     ::std::io::copy(&mut file, solc.stdin.as_mut().unwrap())?;
 
@@ -45,7 +48,9 @@ pub fn compile<S: AsRef<Path>>(file_path: S) -> Result<Vec<u8>, Error> {
         .captures(stdout.as_str())
         .expect("Regex didn't match!");
 
-    let hexcode = captures.name("hexcode").ok_or(Error::CaptureSolcBytecode)?;
+    let hexcode = captures
+        .name("hexcode")
+        .context("failed to find hex in solc output")?;
     let bytes = hex::decode(hexcode.as_str())?;
 
     Ok(bytes)

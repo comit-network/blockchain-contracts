@@ -19,6 +19,7 @@ use crate::calculate_offsets::placeholder_offsets;
 use crate::calculate_offsets::{
     bitcoin::BitcoinScript, ethereum::EthereumContract, offset::to_markdown, Contract,
 };
+use anyhow::Result;
 use std::path::Path;
 
 const HETH_TEMPLATE_FOLDER: &str = "./print_offsets/heth_template/";
@@ -26,7 +27,7 @@ const HERC20_TEMPLATE_FOLDER: &str = "./print_offsets/herc20_template/";
 const HBIT_TEMPLATE_FOLDER: &str = "./print_offsets/hbit_template/";
 
 #[allow(clippy::print_stdout)]
-fn main() -> Result<(), Error> {
+fn main() -> Result<()> {
     println!(
         "{}",
         generate_markdown::<BitcoinScript, &str>(HBIT_TEMPLATE_FOLDER)?
@@ -43,7 +44,7 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn generate_markdown<C: Contract, S: AsRef<Path>>(template_folder: S) -> Result<String, C::Error> {
+fn generate_markdown<C: Contract, S: AsRef<Path>>(template_folder: S) -> Result<String> {
     let contract = C::compile(template_folder)?;
 
     let metadata = contract.metadata();
@@ -56,31 +57,13 @@ fn generate_markdown<C: Contract, S: AsRef<Path>>(template_folder: S) -> Result<
     ))
 }
 
-#[derive(Debug)]
-enum Error {
-    BitcoinScript(self::calculate_offsets::bitcoin::Error),
-    EthereumContract(self::calculate_offsets::ethereum::Error),
-}
-
-impl From<self::calculate_offsets::bitcoin::Error> for Error {
-    fn from(err: self::calculate_offsets::bitcoin::Error) -> Self {
-        Error::BitcoinScript(err)
-    }
-}
-
-impl From<self::calculate_offsets::ethereum::Error> for Error {
-    fn from(err: self::calculate_offsets::ethereum::Error) -> Self {
-        Error::EthereumContract(err)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use blockchain_contracts::ethereum::{herc20, heth};
 
     #[test]
-    fn heth_contract_template_matches_template_in_calculate_offsets() -> Result<(), Error> {
+    fn heth_contract_template_matches_template_in_calculate_offsets() -> Result<()> {
         let contract = EthereumContract::compile(HETH_TEMPLATE_FOLDER)?;
         assert_eq!(
             heth::CONTRACT_TEMPLATE.to_vec(),
@@ -90,7 +73,7 @@ mod tests {
     }
 
     #[test]
-    fn herc20_contract_template_matches_template_in_calculate_offsets() -> Result<(), Error> {
+    fn herc20_contract_template_matches_template_in_calculate_offsets() -> Result<()> {
         let contract = EthereumContract::compile(HERC20_TEMPLATE_FOLDER)?;
         assert_eq!(
             herc20::CONTRACT_TEMPLATE.to_vec(),

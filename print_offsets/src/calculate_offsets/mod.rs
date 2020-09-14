@@ -3,6 +3,7 @@ use crate::calculate_offsets::{
     offset::Offset,
     placeholder_config::{Placeholder, PlaceholderConfig},
 };
+use anyhow::{Context, Result};
 use std::path::Path;
 use std::process::Command;
 
@@ -12,28 +13,14 @@ pub mod metadata;
 pub mod offset;
 pub mod placeholder_config;
 
-#[derive(Debug)]
-pub enum Error {
-    PlaceholderNotFound(String),
-    Hex(hex::FromHexError),
-}
-
-impl From<hex::FromHexError> for Error {
-    fn from(e: hex::FromHexError) -> Self {
-        Error::Hex(e)
-    }
-}
-
 pub trait Contract: std::marker::Sized {
-    type Error: From<Error>;
-
-    fn compile<S: AsRef<Path>>(template_folder: S) -> Result<Self, Self::Error>;
+    fn compile<S: AsRef<Path>>(template_folder: S) -> Result<Self>;
     fn metadata(&self) -> Metadata;
     fn placeholder_config(&self) -> &PlaceholderConfig;
     fn bytes(&self) -> &[u8];
 }
 
-pub fn placeholder_offsets<C: Contract>(contract: C) -> Result<Vec<Offset>, Error> {
+pub fn placeholder_offsets<C: Contract>(contract: C) -> Result<Vec<Offset>> {
     contract
         .placeholder_config()
         .placeholders
@@ -42,10 +29,10 @@ pub fn placeholder_offsets<C: Contract>(contract: C) -> Result<Vec<Offset>, Erro
         .collect()
 }
 
-fn calc_offset(placeholder: &Placeholder, contract: &[u8]) -> Result<Offset, Error> {
+fn calc_offset(placeholder: &Placeholder, contract: &[u8]) -> Result<Offset> {
     let decoded_placeholder = hex::decode(placeholder.replace_pattern.as_str())?;
     let start_pos = find_subsequence(&contract[..], &decoded_placeholder[..])
-        .ok_or_else(|| Error::PlaceholderNotFound(hex::encode(&decoded_placeholder)))?;
+        .with_context(|| format!("failed to find placeholder {}", placeholder.name))?;
     let end_pos = start_pos + decoded_placeholder.len();
 
     Ok(Offset {

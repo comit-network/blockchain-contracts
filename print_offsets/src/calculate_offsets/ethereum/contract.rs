@@ -1,10 +1,11 @@
 use crate::calculate_offsets::{
     calc_offset,
-    ethereum::{compile_contract::compile, Error},
+    ethereum::compile_contract::compile,
     metadata::Metadata,
     placeholder_config::{Placeholder, PlaceholderConfig},
     Contract,
 };
+use anyhow::Result;
 use byteorder::{BigEndian, ByteOrder};
 use std::convert::TryFrom;
 use std::path::Path;
@@ -15,10 +16,7 @@ pub struct EthereumContract {
 }
 
 impl EthereumContract {
-    fn replace_contract_offset_parameters_in_header(
-        header: &mut [u8],
-        body: &[u8],
-    ) -> Result<(), Error> {
+    fn replace_contract_offset_parameters_in_header(header: &mut [u8], body: &[u8]) -> Result<()> {
         let body_length = body.len();
         let header_length = header.len();
 
@@ -49,7 +47,7 @@ impl EthereumContract {
         name: &str,
         value: usize,
         header: &mut [u8],
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let header_placeholder = Placeholder {
             name: name.into(),
             replace_pattern: replace_pattern.into(),
@@ -67,9 +65,7 @@ impl EthereumContract {
 }
 
 impl Contract for EthereumContract {
-    type Error = crate::calculate_offsets::ethereum::Error;
-
-    fn compile<S: AsRef<Path>>(template_folder: S) -> Result<EthereumContract, Error> {
+    fn compile<S: AsRef<Path>>(template_folder: S) -> Result<EthereumContract> {
         let mut bytes = compile(template_folder.as_ref().join("deploy_header.asm"))?;
         let mut contract_body = compile(template_folder.as_ref().join("contract.asm"))?;
 
