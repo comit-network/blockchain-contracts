@@ -14,18 +14,6 @@ use rust_bitcoin::{
 // contract template RFC: https://github.com/comit-network/RFCs/blob/master/RFC-005-SWAP-Basic-Bitcoin.adoc#contract
 pub const CONTRACT_TEMPLATE: [u8;97] = hex!("6382012088a82010000000000000000000000000000000000000000000000000000000000000018876a9143000000000000000000000000000000000000003670420000002b17576a91440000000000000000000000000000000000000046888ac");
 
-#[derive(Clone, Copy, Debug)]
-pub enum UnlockingError {
-    WrongSecret {
-        got: SecretHash,
-        expected: SecretHash,
-    },
-    WrongPubkeyHash {
-        got: [u8; 20],
-        expected: [u8; 20],
-    },
-}
-
 #[derive(Debug)]
 pub struct Htlc {
     script: Vec<u8>,
