@@ -19,7 +19,7 @@ use crate::calculate_offsets::placeholder_offsets;
 use crate::calculate_offsets::{
     bitcoin::BitcoinScript, ethereum::EthereumContract, offset::to_markdown, Contract,
 };
-use std::ffi::OsStr;
+use std::path::Path;
 
 const HETH_TEMPLATE_FOLDER: &str = "./print_offsets/heth_template/";
 const HERC20_TEMPLATE_FOLDER: &str = "./print_offsets/herc20_template/";
@@ -43,7 +43,7 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn generate_markdown<C: Contract, S: AsRef<OsStr>>(template_folder: S) -> Result<String, C::Error> {
+fn generate_markdown<C: Contract, S: AsRef<Path>>(template_folder: S) -> Result<String, C::Error> {
     let contract = C::compile(template_folder)?;
 
     let metadata = contract.metadata();

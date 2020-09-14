@@ -1,5 +1,6 @@
 use serde::Deserialize;
-use std::{ffi::OsStr, fs::File, io::BufReader};
+use std::path::Path;
+use std::{fs::File, io::BufReader};
 
 #[derive(Debug, Deserialize)]
 pub struct PlaceholderConfig {
@@ -32,8 +33,8 @@ impl From<serde_json::Error> for Error {
 }
 
 impl PlaceholderConfig {
-    pub fn from_file<S: AsRef<OsStr>>(file_path: S) -> Result<PlaceholderConfig, Error> {
-        let file = File::open(OsStr::new(&file_path))?;
+    pub fn from_file<S: AsRef<Path>>(file_path: S) -> Result<PlaceholderConfig, Error> {
+        let file = File::open(file_path)?;
         let reader = BufReader::new(file);
 
         let config = serde_json::from_reader(reader)?;

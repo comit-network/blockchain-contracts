@@ -1,12 +1,13 @@
 use crate::calculate_offsets::{
-    calc_offset, concat_path,
+    calc_offset,
     ethereum::{compile_contract::compile, Error},
     metadata::Metadata,
     placeholder_config::{Placeholder, PlaceholderConfig},
     Contract,
 };
 use byteorder::{BigEndian, ByteOrder};
-use std::{convert::TryFrom, ffi::OsStr};
+use std::convert::TryFrom;
+use std::path::Path;
 
 pub struct EthereumContract {
     bytes: Vec<u8>,
@@ -68,16 +69,16 @@ impl EthereumContract {
 impl Contract for EthereumContract {
     type Error = crate::calculate_offsets::ethereum::Error;
 
-    fn compile<S: AsRef<OsStr>>(template_folder: S) -> Result<EthereumContract, Error> {
-        let mut bytes = compile(concat_path(&template_folder, "deploy_header.asm"))?;
-        let mut contract_body = compile(concat_path(&template_folder, "contract.asm"))?;
+    fn compile<S: AsRef<Path>>(template_folder: S) -> Result<EthereumContract, Error> {
+        let mut bytes = compile(template_folder.as_ref().join("deploy_header.asm"))?;
+        let mut contract_body = compile(template_folder.as_ref().join("contract.asm"))?;
 
         Self::replace_contract_offset_parameters_in_header(&mut bytes, &contract_body)?;
 
         bytes.append(&mut contract_body);
 
         let placeholder_config =
-            PlaceholderConfig::from_file(concat_path(&template_folder, "config.json"))?;
+            PlaceholderConfig::from_file(template_folder.as_ref().join("config.json"))?;
 
         Ok(Self {
             bytes,

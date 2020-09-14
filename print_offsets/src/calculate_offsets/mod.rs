@@ -3,7 +3,8 @@ use crate::calculate_offsets::{
     offset::Offset,
     placeholder_config::{Placeholder, PlaceholderConfig},
 };
-use std::{ffi::OsStr, path::PathBuf, process::Command};
+use std::path::Path;
+use std::process::Command;
 
 pub mod bitcoin;
 pub mod ethereum;
@@ -26,7 +27,7 @@ impl From<hex::FromHexError> for Error {
 pub trait Contract: std::marker::Sized {
     type Error: From<Error>;
 
-    fn compile<S: AsRef<OsStr>>(template_folder: S) -> Result<Self, Self::Error>;
+    fn compile<S: AsRef<Path>>(template_folder: S) -> Result<Self, Self::Error>;
     fn metadata(&self) -> Metadata;
     fn placeholder_config(&self) -> &PlaceholderConfig;
     fn bytes(&self) -> &[u8];
@@ -39,10 +40,6 @@ pub fn placeholder_offsets<C: Contract>(contract: C) -> Result<Vec<Offset>, Erro
         .iter()
         .map(|placeholder| calc_offset(placeholder, contract.bytes()))
         .collect()
-}
-
-fn concat_path<S: AsRef<OsStr>>(folder: S, file: &str) -> PathBuf {
-    [OsStr::new(&folder), OsStr::new(file)].iter().collect()
 }
 
 fn calc_offset(placeholder: &Placeholder, contract: &[u8]) -> Result<Offset, Error> {

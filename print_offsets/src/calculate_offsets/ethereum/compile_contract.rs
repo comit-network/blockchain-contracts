@@ -1,12 +1,12 @@
 use crate::calculate_offsets::{check_bin_in_path, ethereum::Error};
 use regex::Regex;
+use std::path::Path;
 use std::{
     env::var,
-    ffi::OsStr,
     process::{Command, Stdio},
 };
 
-pub fn compile<S: AsRef<OsStr>>(file_path: S) -> Result<Vec<u8>, Error> {
+pub fn compile<S: AsRef<Path>>(file_path: S) -> Result<Vec<u8>, Error> {
     let solc_bin = var("SOLC_BIN");
 
     let mut solc = match solc_bin {
@@ -33,7 +33,7 @@ pub fn compile<S: AsRef<OsStr>>(file_path: S) -> Result<Vec<u8>, Error> {
         }
     };
 
-    let mut file = ::std::fs::File::open(OsStr::new(&file_path))?;
+    let mut file = ::std::fs::File::open(file_path)?;
 
     ::std::io::copy(&mut file, solc.stdin.as_mut().unwrap())?;
 

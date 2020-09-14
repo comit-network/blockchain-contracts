@@ -1,12 +1,11 @@
 use crate::calculate_offsets::{bitcoin::Error, check_bin_in_path};
 use std::{
-    ffi::OsStr,
     io::Write,
     path::Path,
     process::{Command, Stdio},
 };
 
-pub fn compile<S: AsRef<OsStr>>(file_path: S) -> Result<Vec<u8>, Error> {
+pub fn compile<S: AsRef<Path>>(file_path: S) -> Result<Vec<u8>, Error> {
     check_bin_in_path("docker");
     let mut bx = Command::new("docker")
         .arg("run")
@@ -19,7 +18,7 @@ pub fn compile<S: AsRef<OsStr>>(file_path: S) -> Result<Vec<u8>, Error> {
         .stderr(Stdio::null())
         .spawn()?;
 
-    let input = std::fs::read(Path::new(&file_path))?;
+    let input = std::fs::read(file_path)?;
     let input = String::from_utf8(input)?;
     let input = input.replace("\n", " ").into_bytes();
 

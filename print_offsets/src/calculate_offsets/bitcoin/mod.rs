@@ -1,10 +1,10 @@
 use crate::calculate_offsets::{
-    self, concat_path,
+    self,
     metadata::Metadata,
     placeholder_config::{self, PlaceholderConfig},
     Contract,
 };
-use std::{ffi::OsStr, path::Path, string::FromUtf8Error};
+use std::{path::Path, string::FromUtf8Error};
 
 mod compile_contract;
 
@@ -63,10 +63,10 @@ impl From<FromUtf8Error> for Error {
 impl Contract for BitcoinScript {
     type Error = Error;
 
-    fn compile<S: AsRef<OsStr>>(template_folder: S) -> Result<Self, Self::Error> {
-        let bytes = compile_contract::compile(Path::new(&template_folder).join("contract.script"))?;
+    fn compile<S: AsRef<Path>>(template_folder: S) -> Result<Self, Self::Error> {
+        let bytes = compile_contract::compile(template_folder.as_ref().join("contract.script"))?;
         let placeholder_config =
-            PlaceholderConfig::from_file(concat_path(&template_folder, "config.json"))?;
+            PlaceholderConfig::from_file(template_folder.as_ref().join("config.json"))?;
 
         Ok(Self {
             bytes,
