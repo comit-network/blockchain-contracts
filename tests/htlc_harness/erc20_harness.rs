@@ -3,7 +3,7 @@ use crate::{
     htlc_harness::{new_account, timestamp::Timestamp, SECRET_HASH},
     parity_client::ParityClient,
 };
-use blockchain_contracts::ethereum::Erc20Htlc;
+use blockchain_contracts::ethereum::herc20::Htlc;
 use blockchain_contracts::ethereum::TokenQuantity;
 use std::sync::Arc;
 use testcontainers::{images::parity_parity::ParityEthereum, Container, Docker};
@@ -75,7 +75,7 @@ pub fn erc20_harness<D: Docker>(
 
     alice_client.mint_tokens(token_contract, params.alice_initial_tokens, alice);
 
-    let erc20_htlc = Erc20Htlc::new(
+    let erc20_htlc = Htlc::new(
         params.htlc_refund_timestamp.into(),
         blockchain_contracts::ethereum::Address(alice.into()),
         blockchain_contracts::ethereum::Address(bob.into()),
@@ -87,7 +87,7 @@ pub fn erc20_harness<D: Docker>(
     let tx_id = alice_client.deploy_htlc(
         erc20_htlc.into(),
         U256::from(0),
-        Erc20Htlc::deploy_tx_gas_limit().into(),
+        Htlc::deploy_tx_gas_limit().into(),
     );
 
     let transaction_receipt = alice_client.receipt(tx_id);

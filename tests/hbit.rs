@@ -13,8 +13,8 @@ use crate::{
 };
 use bitcoin_helper::new_tc_bitcoincore_client;
 use blockchain_contracts::bitcoin::{
+    hbit::Htlc,
     witness::{PrimedInput, PrimedTransaction, UnlockParameters, Witness},
-    BitcoinHtlc,
 };
 use rust_bitcoin::Txid;
 use rust_bitcoin::{
@@ -32,10 +32,10 @@ use testcontainers::{clients::Cli, images::coblox_bitcoincore::BitcoinCore, Dock
 /// except that we want to insert our "CustomSizeSecret" on the witness
 /// stack.
 ///
-/// [method]: blockchain_contracts::bitcoin::bitcoin_htlc::
+/// [method]: blockchain_contracts::bitcoin::hbit::bitcoin_htlc::
 /// BitcoinHtlc#unlock_with_secret
 fn unlock_with_custom_size_secret(
-    htlc: BitcoinHtlc,
+    htlc: Htlc,
     secret_key: SecretKey,
     custom_size_secret: CustomSizeSecret,
 ) -> UnlockParameters {
@@ -86,7 +86,7 @@ fn fund_htlc(
     Txid,
     OutPoint,
     Amount,
-    BitcoinHtlc,
+    Htlc,
     Timestamp,
     SecretKey,
     SecretKey,
@@ -108,7 +108,7 @@ fn fund_htlc(
     let refund_timestamp = Timestamp::from(current_time).plus(5);
     let amount = Amount::from_sat(100_000_001);
 
-    let htlc = BitcoinHtlc::new(
+    let htlc = Htlc::new(
         refund_timestamp.into(),
         refund_pubkey_hash,
         redeem_pubkey_hash,

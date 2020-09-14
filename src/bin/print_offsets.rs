@@ -16,30 +16,28 @@
 mod calculate_offsets;
 
 use self::calculate_offsets::{
-    bitcoin::BitcoinScript, ethereum::contract::EthereumContract, offset::to_markdown, Contract,
+    bitcoin::BitcoinScript, ethereum::EthereumContract, offset::to_markdown, Contract,
 };
 use crate::calculate_offsets::placeholder_offsets;
 use std::ffi::OsStr;
 
-const ETHER_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/ethereum/templates/ether/";
-const ERC20_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/ethereum/templates/erc20/";
-const BITCOIN_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/bitcoin/templates/bitcoin/";
+const HETH_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/ethereum/heth_template/";
+const HERC20_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/ethereum/herc20_template/";
+const HBIT_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/bitcoin/hbit_template/";
 
 #[allow(clippy::print_stdout)]
 fn main() -> Result<(), Error> {
-    println!("### RFC003 ###");
-
     println!(
         "{}",
-        generate_markdown::<BitcoinScript, &str>(BITCOIN_TEMPLATE_FOLDER)?
+        generate_markdown::<BitcoinScript, &str>(HBIT_TEMPLATE_FOLDER)?
     );
     println!(
         "{}",
-        generate_markdown::<EthereumContract, &str>(ETHER_TEMPLATE_FOLDER)?
+        generate_markdown::<EthereumContract, &str>(HETH_TEMPLATE_FOLDER)?
     );
     println!(
         "{}",
-        generate_markdown::<EthereumContract, &str>(ERC20_TEMPLATE_FOLDER)?
+        generate_markdown::<EthereumContract, &str>(HERC20_TEMPLATE_FOLDER)?
     );
 
     Ok(())
@@ -79,23 +77,23 @@ impl From<self::calculate_offsets::ethereum::Error> for Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use blockchain_contracts::ethereum::{erc20_htlc, ether_htlc};
+    use blockchain_contracts::ethereum::{herc20, heth};
 
     #[test]
-    fn ether_contract_template_matches_template_in_calculate_offsets() -> Result<(), Error> {
-        let contract = EthereumContract::compile(ETHER_TEMPLATE_FOLDER)?;
+    fn heth_contract_template_matches_template_in_calculate_offsets() -> Result<(), Error> {
+        let contract = EthereumContract::compile(HETH_TEMPLATE_FOLDER)?;
         assert_eq!(
-            ether_htlc::CONTRACT_TEMPLATE.to_vec(),
+            heth::CONTRACT_TEMPLATE.to_vec(),
             contract.metadata().contract,
         );
         Ok(())
     }
 
     #[test]
-    fn erc20_contract_template_matches_template_in_calculate_offsets() -> Result<(), Error> {
-        let contract = EthereumContract::compile(ERC20_TEMPLATE_FOLDER)?;
+    fn herc20_contract_template_matches_template_in_calculate_offsets() -> Result<(), Error> {
+        let contract = EthereumContract::compile(HERC20_TEMPLATE_FOLDER)?;
         assert_eq!(
-            erc20_htlc::CONTRACT_TEMPLATE.to_vec(),
+            herc20::CONTRACT_TEMPLATE.to_vec(),
             contract.metadata().contract,
         );
         Ok(())

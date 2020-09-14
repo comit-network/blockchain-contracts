@@ -1,4 +1,2 @@
-pub mod bitcoin_htlc;
+pub mod hbit;
 pub mod witness;
-
-pub use bitcoin_htlc::*;

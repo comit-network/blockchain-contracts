@@ -27,12 +27,12 @@ pub enum UnlockingError {
 }
 
 #[derive(Debug)]
-pub struct BitcoinHtlc {
+pub struct Htlc {
     script: Vec<u8>,
     expiry: u32,
 }
 
-impl BitcoinHtlc {
+impl Htlc {
     pub fn new(
         expiry: u32,
         refund_identity: hash160::Hash,
@@ -45,7 +45,7 @@ impl BitcoinHtlc {
         BitcoinTimestamp(expiry).fit_into_placeholder_slice(&mut contract[65..69]);
         refund_identity.fit_into_placeholder_slice(&mut contract[74..94]);
 
-        BitcoinHtlc {
+        Htlc {
             script: contract,
             expiry,
         }
@@ -115,7 +115,7 @@ mod tests {
 
     #[test]
     fn compiled_contract_is_same_length_as_template() {
-        let htlc = BitcoinHtlc::new(
+        let htlc = Htlc::new(
             3_000_000,
             hash160::Hash::default(),
             hash160::Hash::default(),
@@ -131,7 +131,7 @@ mod tests {
 
     #[test]
     fn given_input_data_when_compiled_should_contain_given_data() {
-        let htlc = BitcoinHtlc::new(
+        let htlc = Htlc::new(
             2_000_000_000,
             hash160::Hash::default(),
             hash160::Hash::default(),

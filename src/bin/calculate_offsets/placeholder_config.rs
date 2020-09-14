@@ -3,8 +3,7 @@ use std::{ffi::OsStr, fs::File, io::BufReader};
 
 #[derive(Debug, Deserialize)]
 pub struct PlaceholderConfig {
-    pub ledger_name: String,
-    pub asset_name: String,
+    pub protocol_name: String,
     pub placeholders: Vec<Placeholder>,
 }
 

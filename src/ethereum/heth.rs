@@ -6,15 +6,15 @@ use hex_literal::hex;
 pub const CONTRACT_TEMPLATE: [u8;311] = hex!("61012861000f6000396101286000f3361561007957602036141561004f57602060006000376020602160206000600060026048f17f100000000000000000000000000000000000000000000000000000000000000160215114166100ae575b7f696e76616c69645365637265740000000000000000000000000000000000000060005260206000fd5b426320000002106100eb577f746f6f4561726c7900000000000000000000000000000000000000000000000060005260206000fd5b7f72656465656d656400000000000000000000000000000000000000000000000060206000a1733000000000000000000000000000000000000003ff5b7f726566756e64656400000000000000000000000000000000000000000000000060006000a1734000000000000000000000000000000000000004ff");
 
 #[derive(Debug)]
-pub struct EtherHtlc(Vec<u8>);
+pub struct Htlc(Vec<u8>);
 
-impl From<EtherHtlc> for Vec<u8> {
-    fn from(htlc: EtherHtlc) -> Self {
+impl From<Htlc> for Vec<u8> {
+    fn from(htlc: Htlc) -> Self {
         htlc.0
     }
 }
 
-impl EtherHtlc {
+impl Htlc {
     pub fn new(
         expiry: u32,
         refund_identity: Address,
@@ -27,7 +27,7 @@ impl EtherHtlc {
         redeem_identity.fit_into_placeholder_slice(&mut contract[229..249]);
         refund_identity.fit_into_placeholder_slice(&mut contract[290..310]);
 
-        EtherHtlc(contract)
+        Htlc(contract)
     }
 
     pub fn deploy_tx_gas_limit() -> u64 {
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn compiled_contract_is_same_length_as_template() {
-        let htlc = EtherHtlc::new(
+        let htlc = Htlc::new(
             3_000_000,
             Address([0u8; 20]),
             Address([0u8; 20]),
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn given_input_data_when_compiled_should_contain_given_data() {
-        let htlc = EtherHtlc::new(
+        let htlc = Htlc::new(
             2_000_000_000,
             Address([0u8; 20]),
             Address([0u8; 20]),
@@ -110,7 +110,7 @@ mod tests {
         .unwrap();
         let expiry = 1_552_263_040;
 
-        let htlc = EtherHtlc::new(
+        let htlc = Htlc::new(
             expiry,
             Address(refund_identity),
             Address(redeem_identity),

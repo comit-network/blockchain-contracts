@@ -1,8 +1,5 @@
-pub mod erc20_htlc;
-pub mod ether_htlc;
-
-pub use erc20_htlc::*;
-pub use ether_htlc::*;
+pub mod herc20;
+pub mod heth;
 
 /// The log message emitted when the HTLC is redeemed.
 ///

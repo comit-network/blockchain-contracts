@@ -1,7 +1,9 @@
 use crate::calculate_offsets::{self, placeholder_config};
 
 mod compile_contract;
-pub mod contract;
+mod contract;
+
+pub use contract::EthereumContract;
 
 #[derive(Debug)]
 pub enum Error {

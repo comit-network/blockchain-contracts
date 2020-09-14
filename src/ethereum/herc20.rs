@@ -6,15 +6,15 @@ use hex_literal::hex;
 pub const CONTRACT_TEMPLATE: [u8;411] = hex!("61018c61000f60003961018c6000f3361561007957602036141561004f57602060006000376020602160206000600060026048f17f100000000000000000000000000000000000000000000000000000000000000160215114166100ae575b7f696e76616c69645365637265740000000000000000000000000000000000000060005260206000fd5b426320000002106100f1577f746f6f4561726c7900000000000000000000000000000000000000000000000060005260206000fd5b7f72656465656d656400000000000000000000000000000000000000000000000060206000a1733000000000000000000000000000000000000003602052610134565b7f726566756e64656400000000000000000000000000000000000000000000000060006000a1734000000000000000000000000000000000000004602052610134565b63a9059cbb6000527f5000000000000000000000000000000000000000000000000000000000000005604052602060606044601c6000736000000000000000000000000000000000000006620186a05a03f150602051ff");
 
 #[derive(Debug, Clone)]
-pub struct Erc20Htlc(Vec<u8>);
+pub struct Htlc(Vec<u8>);
 
-impl From<Erc20Htlc> for Vec<u8> {
-    fn from(htlc: Erc20Htlc) -> Self {
+impl From<Htlc> for Vec<u8> {
+    fn from(htlc: Htlc) -> Self {
         htlc.0
     }
 }
 
-impl Erc20Htlc {
+impl Htlc {
     pub fn new(
         expiry: u32,
         refund_identity: Address,
@@ -31,7 +31,7 @@ impl Erc20Htlc {
         token_quantity.fit_into_placeholder_slice(&mut contract[333..365]);
         token_contract_address.fit_into_placeholder_slice(&mut contract[379..399]);
 
-        Erc20Htlc(contract)
+        Htlc(contract)
     }
 
     pub fn deploy_tx_gas_limit() -> u64 {
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn compiled_contract_is_same_length_as_template() {
-        let htlc = Erc20Htlc::new(
+        let htlc = Htlc::new(
             3_000_000,
             Address([0u8; 20]),
             Address([0u8; 20]),
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn given_input_data_when_compiled_should_contain_given_data() {
-        let htlc = Erc20Htlc::new(
+        let htlc = Htlc::new(
             2_000_000_000,
             Address([0u8; 20]),
             Address([0u8; 20]),
@@ -145,7 +145,7 @@ mod tests {
         .unwrap();
         let expiry = 1_552_263_040;
 
-        let htlc = Erc20Htlc::new(
+        let htlc = Htlc::new(
             expiry,
             Address(refund_identity),
             Address(redeem_identity),

@@ -1,6 +1,5 @@
 {
-  "ledger_name": "Ethereum",
-  "asset_name": "ERC20",
+  "protocol_name": "heth",
   "placeholders": [
     {
       "name": "secret_hash",
@@ -17,14 +16,6 @@
     {
       "name": "refund_address",
       "replace_pattern": "4000000000000000000000000000000000000004"
-    },
-    {
-      "name": "amount",
-      "replace_pattern": "5000000000000000000000000000000000000000000000000000000000000005"
-    },
-    {
-      "name": "token_contract_address",
-      "replace_pattern": "6000000000000000000000000000000000000006"
     }
   ]
 }

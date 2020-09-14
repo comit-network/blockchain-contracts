@@ -13,7 +13,7 @@ use crate::{
 };
 
 use crate::parity_client::ParityClient;
-use blockchain_contracts::ethereum::erc20_htlc::Erc20Htlc;
+use blockchain_contracts::ethereum::herc20::Htlc;
 use blockchain_contracts::ethereum::Address;
 use blockchain_contracts::ethereum::TokenQuantity;
 use blockchain_contracts::ethereum::INVALID_SECRET;
@@ -50,7 +50,7 @@ fn given_erc20_token_should_deploy_erc20_htlc_and_fund_htlc() {
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -76,7 +76,7 @@ fn given_erc20_token_should_deploy_erc20_htlc_and_fund_htlc() {
     let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(SECRET.to_vec())),
-        Erc20Htlc::redeem_tx_gas_limit().into(),
+        Htlc::redeem_tx_gas_limit().into(),
     );
     log::debug!("used gas ERC20 redeem {:?}", transaction_receipt.gas_used);
 
@@ -108,7 +108,7 @@ fn given_funded_erc20_htlc_when_redeemed_with_secret_then_tokens_are_transferred
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -130,7 +130,7 @@ fn given_funded_erc20_htlc_when_redeemed_with_secret_then_tokens_are_transferred
     let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(SECRET.to_vec())),
-        U256::from(Erc20Htlc::redeem_tx_gas_limit()),
+        U256::from(Htlc::redeem_tx_gas_limit()),
     );
     log::debug!("used gas ERC20 redeemed {:?}", transaction_receipt.gas_used);
 
@@ -163,7 +163,7 @@ fn given_deployed_erc20_htlc_when_refunded_after_expiry_time_then_tokens_are_ref
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -184,7 +184,7 @@ fn given_deployed_erc20_htlc_when_refunded_after_expiry_time_then_tokens_are_ref
     // Wait for the contract to expire
     sleep_until(harness_params.htlc_refund_timestamp);
     let transaction_receipt =
-        client.send_data(htlc_address, None, Erc20Htlc::refund_tx_gas_limit().into());
+        client.send_data(htlc_address, None, Htlc::refund_tx_gas_limit().into());
     log::debug!("used gas ERC20 refund {:?}", transaction_receipt.gas_used);
 
     assert_eq!(
@@ -218,7 +218,7 @@ fn given_deployed_erc20_htlc_when_expiry_time_not_yet_reached_should_revert_tx_w
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -238,7 +238,7 @@ fn given_deployed_erc20_htlc_when_expiry_time_not_yet_reached_should_revert_tx_w
 
     // Don't wait for the timeout and don't send a secret
     let transaction_receipt =
-        client.send_data(htlc_address, None, Erc20Htlc::refund_tx_gas_limit().into());
+        client.send_data(htlc_address, None, Htlc::refund_tx_gas_limit().into());
     log::debug!(
         "used gas ERC20 refund too early {:?}",
         transaction_receipt.gas_used
@@ -277,7 +277,7 @@ fn given_not_enough_tokens_when_redeemed_token_balances_dont_change() {
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -299,7 +299,7 @@ fn given_not_enough_tokens_when_redeemed_token_balances_dont_change() {
     let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(SECRET.to_vec())),
-        Erc20Htlc::redeem_tx_gas_limit().into(),
+        Htlc::redeem_tx_gas_limit().into(),
     );
     log::debug!(
         "used gas ERC20 redeemed not enough token {:?}",
@@ -332,7 +332,7 @@ fn given_htlc_and_redeem_should_emit_redeem_log_msg_with_secret() {
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -380,7 +380,7 @@ fn given_htlc_and_refund_should_emit_refund_log_msg() {
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -439,7 +439,7 @@ fn given_funded_erc20_htlc_when_redeemed_with_short_secret_should_revert_with_er
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -461,7 +461,7 @@ fn given_funded_erc20_htlc_when_redeemed_with_short_secret_should_revert_with_er
     let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(vec![1u8, 2u8, 3u8, 4u8, 6u8, 6u8, 7u8, 9u8, 10u8])),
-        Erc20Htlc::redeem_tx_gas_limit().into(),
+        Htlc::redeem_tx_gas_limit().into(),
     );
 
     log::debug!(
@@ -505,7 +505,7 @@ fn given_correct_zero_secret_htlc_should_redeem() {
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -527,7 +527,7 @@ fn given_correct_zero_secret_htlc_should_redeem() {
     let transaction_receipt = client.send_data(
         htlc_address,
         Some(Bytes(secret_vec)),
-        Erc20Htlc::redeem_tx_gas_limit().into(),
+        Htlc::redeem_tx_gas_limit().into(),
     );
 
     log::debug!("used gas ERC20 redeem {:?}", transaction_receipt.gas_used);
@@ -568,7 +568,7 @@ fn given_short_zero_secret_htlc_should_revert_tx_with_error() {
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )
@@ -593,7 +593,7 @@ fn given_short_zero_secret_htlc_should_revert_tx_with_error() {
             0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
             0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
         ])),
-        Erc20Htlc::redeem_tx_gas_limit().into(),
+        Htlc::redeem_tx_gas_limit().into(),
     );
 
     log::debug!(
@@ -633,7 +633,7 @@ fn given_invalid_secret_htlc_should_revert_tx_with_error() {
         to: Some(token_contract),
         value: U256::from(0),
         data: Some(
-            Erc20Htlc::transfer_erc20_tx_payload(
+            Htlc::transfer_erc20_tx_payload(
                 TokenQuantity(token_amount.into()),
                 Address(htlc_address.into()),
             )

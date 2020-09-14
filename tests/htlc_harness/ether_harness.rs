@@ -3,7 +3,7 @@ use crate::{
     htlc_harness::{new_account, timestamp::Timestamp, SECRET_HASH},
     parity_client::ParityClient,
 };
-use blockchain_contracts::ethereum::EtherHtlc;
+use blockchain_contracts::ethereum::heth::Htlc;
 use std::sync::Arc;
 use testcontainers::{images::parity_parity::ParityEthereum, Container, Docker};
 use web3::{
@@ -67,7 +67,7 @@ pub fn ether_harness<D: Docker>(
     alice_client.give_eth_to(alice, params.alice_initial_wei);
 
     let tx_id = alice_client.deploy_htlc(
-        EtherHtlc::new(
+        Htlc::new(
             params.htlc_refund_timestamp.into(),
             blockchain_contracts::ethereum::Address(alice.into()),
             blockchain_contracts::ethereum::Address(bob.into()),
@@ -75,7 +75,7 @@ pub fn ether_harness<D: Docker>(
         )
         .into(),
         params.htlc_wei_value,
-        EtherHtlc::deploy_tx_gas_limit().into(),
+        Htlc::deploy_tx_gas_limit().into(),
     );
 
     let transaction_receipt = alice_client.receipt(tx_id);

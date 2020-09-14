@@ -11,7 +11,7 @@ use crate::htlc_harness::{
 use blockchain_contracts::ethereum::REDEEMED_LOG_MSG;
 use blockchain_contracts::ethereum::REFUNDED_LOG_MSG;
 use blockchain_contracts::ethereum::TOO_EARLY;
-use blockchain_contracts::ethereum::{EtherHtlc, INVALID_SECRET};
+use blockchain_contracts::ethereum::{heth::Htlc, INVALID_SECRET};
 use parity_client::ParityClient;
 use serde_json::json;
 use spectral::prelude::*;
@@ -36,7 +36,7 @@ fn given_deployed_htlc_when_redeemed_with_secret_then_money_is_transferred() {
     let transaction_receipt = client.send_data(
         htlc,
         Some(Bytes(SECRET.to_vec())),
-        U256::from(EtherHtlc::redeem_tx_gas_limit()),
+        U256::from(Htlc::redeem_tx_gas_limit()),
     );
     log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
 
@@ -68,8 +68,7 @@ fn given_deployed_htlc_when_refunded_after_expiry_time_then_money_is_refunded() 
 
     // Wait for the contract to expire
     sleep_until(harness_params.htlc_refund_timestamp);
-    let transaction_receipt =
-        client.send_data(htlc, None, U256::from(EtherHtlc::refund_tx_gas_limit()));
+    let transaction_receipt = client.send_data(htlc, None, U256::from(Htlc::refund_tx_gas_limit()));
     log::debug!("used gas ETH refund {:?}", transaction_receipt.gas_used);
 
     assert_eq!(client.eth_balance_of(bob), U256::from(0));
@@ -92,8 +91,7 @@ fn given_deployed_htlc_when_refunded_too_early_should_revert_tx_with_error() {
     );
 
     // Don't wait for the timeout and don't send a secret
-    let transaction_receipt =
-        client.send_data(htlc, None, U256::from(EtherHtlc::refund_tx_gas_limit()));
+    let transaction_receipt = client.send_data(htlc, None, U256::from(Htlc::refund_tx_gas_limit()));
     log::debug!("used gas ETH too early {:?}", transaction_receipt.gas_used);
 
     // Check refund did not happen
@@ -115,7 +113,7 @@ fn given_htlc_and_redeem_should_emit_redeem_log_msg_with_secret() {
     let transaction_receipt = client.send_data(
         htlc,
         Some(Bytes(SECRET.to_vec())),
-        EtherHtlc::redeem_tx_gas_limit().into(),
+        Htlc::redeem_tx_gas_limit().into(),
     );
     log::debug!("used gas ETH redeem {:?}", transaction_receipt.gas_used);
 }
@@ -129,7 +127,7 @@ fn given_htlc_and_refund_should_emit_refund_log_msg() {
 
     // Wait for the timelock to expire
     sleep_until(harness_params.htlc_refund_timestamp);
-    let transaction_receipt = client.send_data(htlc, None, EtherHtlc::refund_tx_gas_limit().into());
+    let transaction_receipt = client.send_data(htlc, None, Htlc::refund_tx_gas_limit().into());
 
     let topic: H256 = REFUNDED_LOG_MSG.parse().unwrap();
     let Log { topics, data, .. } = assert_that(&transaction_receipt.logs)
@@ -200,7 +198,7 @@ fn given_correct_zero_secret_htlc_should_redeem() {
     client.send_data(
         htlc,
         Some(Bytes(secret_vec)),
-        EtherHtlc::redeem_tx_gas_limit().into(),
+        Htlc::redeem_tx_gas_limit().into(),
     );
 
     assert_eq!(

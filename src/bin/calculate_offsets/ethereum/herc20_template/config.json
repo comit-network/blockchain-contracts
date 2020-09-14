@@ -1,6 +1,5 @@
 {
-  "ledger_name": "Bitcoin",
-  "asset_name": "Bitcoin",
+  "protocol_name": "herc20",
   "placeholders": [
     {
       "name": "secret_hash",
@@ -11,12 +10,20 @@
       "replace_pattern": "20000002"
     },
     {
-      "name": "redeem_identity",
+      "name": "redeem_address",
       "replace_pattern": "3000000000000000000000000000000000000003"
     },
     {
-      "name": "refund_identity",
+      "name": "refund_address",
       "replace_pattern": "4000000000000000000000000000000000000004"
+    },
+    {
+      "name": "amount",
+      "replace_pattern": "5000000000000000000000000000000000000000000000000000000000000005"
+    },
+    {
+      "name": "token_contract_address",
+      "replace_pattern": "6000000000000000000000000000000000000006"
     }
   ]
 }

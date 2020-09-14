@@ -76,8 +76,7 @@ impl Contract for BitcoinScript {
 
     fn metadata(&self) -> Metadata {
         Metadata {
-            ledger_name: self.placeholder_config.ledger_name.to_owned(),
-            asset_name: self.placeholder_config.asset_name.to_owned(),
+            protocol_name: self.placeholder_config.protocol_name.clone(),
             contract: self.bytes.to_owned(),
         }
     }
