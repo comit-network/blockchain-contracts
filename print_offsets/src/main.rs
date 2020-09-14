@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn heth_contract_template_matches_template_in_calculate_offsets() -> Result<()> {
-        let contract = EthereumContract::compile(HETH_TEMPLATE_FOLDER)?;
+        let contract = EthereumContract::compile(Path::new("..").join(HETH_TEMPLATE_FOLDER))?;
         assert_eq!(
             heth::CONTRACT_TEMPLATE.to_vec(),
             contract.metadata().contract,
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn herc20_contract_template_matches_template_in_calculate_offsets() -> Result<()> {
-        let contract = EthereumContract::compile(HERC20_TEMPLATE_FOLDER)?;
+        let contract = EthereumContract::compile(Path::new("..").join(HERC20_TEMPLATE_FOLDER))?;
         assert_eq!(
             herc20::CONTRACT_TEMPLATE.to_vec(),
             contract.metadata().contract,
