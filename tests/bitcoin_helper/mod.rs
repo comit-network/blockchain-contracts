@@ -1,4 +1,4 @@
-#![warn(unused_extern_crates, missing_debug_implementations, rust_2018_idioms)]
+#![warn(unused_extern_crates, missing_debug_implementations)]
 #![forbid(unsafe_code)]
 
 use rust_bitcoin::hashes::hex::FromHex;
