@@ -266,7 +266,8 @@ impl Client {
                 key: public_key,
             },
             Network::Regtest,
-        );
+        )
+        .unwrap();
 
         let txid = self.send_to_address(&address, amount).unwrap();
 

@@ -2,7 +2,7 @@ use crate::bitcoin::witness::{UnlockParameters, Witness};
 use rust_bitcoin::{
     hashes::Hash,
     secp256k1::{self, Message, Secp256k1},
-    util::bip143::SighashComponents,
+    util::bip143::SigHashCache,
     Address, Amount, OutPoint, Script, SigHashType, Transaction, TxIn, TxOut,
 };
 
@@ -78,11 +78,12 @@ impl PrimedTransaction {
             let input_parameters = primed_input.input_parameters;
             for (j, witness) in input_parameters.witness.iter().enumerate() {
                 if let Witness::Signature(secret_key) = witness {
-                    let sighash_components = SighashComponents::new(transaction);
-                    let hash_to_sign = sighash_components.sighash_all(
-                        &transaction.input[i],
+                    let mut sighash_cache = SigHashCache::new(transaction as &Transaction);
+                    let hash_to_sign = sighash_cache.signature_hash(
+                        i,
                         &input_parameters.prev_script,
                         primed_input.value.as_sat(),
+                        SigHashType::All,
                     );
                     // `from` should be used instead of `from_slice` once `ThirtyTwoByteHash` is
                     // implemented for Hashes See https://github.com/rust-bitcoin/rust-secp256k1/issues/106
