@@ -5,12 +5,24 @@ use rust_bitcoin::{
     util::bip143::SigHashCache,
     Address, Amount, OutPoint, Script, SigHashType, Transaction, TxIn, TxOut,
 };
+use std::fmt;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Error {
     OverflowingFee,
     FeeHigherThanInputValue,
 }
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::OverflowingFee => write!(f, "provided fee causes overflow"),
+            Error::FeeHigherThanInputValue => write!(f, "fee is higher than input value"),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PrimedInput {
