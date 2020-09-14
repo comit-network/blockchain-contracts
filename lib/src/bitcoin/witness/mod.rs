@@ -8,11 +8,9 @@ pub const SEQUENCE_DISALLOW_NTIMELOCK_NO_RBF: u32 = 0xFFFF_FFFF;
 
 mod p2wpkh;
 mod primed_transaction;
-mod pubkey_hash;
 
 pub use p2wpkh::UnlockP2wpkh;
 pub use primed_transaction::{Error, PrimedInput, PrimedTransaction};
-pub use pubkey_hash::PubkeyHash;
 
 use rust_bitcoin::{
     secp256k1::{PublicKey, SecretKey},

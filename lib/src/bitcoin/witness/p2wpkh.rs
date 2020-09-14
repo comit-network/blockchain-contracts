@@ -1,6 +1,7 @@
-use crate::bitcoin::witness::{PubkeyHash, UnlockParameters, Witness};
+use crate::bitcoin::witness::{UnlockParameters, Witness};
 use rust_bitcoin::{
     hashes::hash160,
+    hashes::Hash,
     secp256k1::{self, PublicKey, SecretKey},
     Script,
 };
@@ -12,9 +13,7 @@ use rust_bitcoin::{
 /// 19 76 a9 14 <public_key_hash> 88 ac
 /// in the unlocking script. See BIP 143.
 /// This function simply returns the latter as a Script.
-fn generate_prev_script(public_key_hash: PubkeyHash) -> Script {
-    let public_key_hash: hash160::Hash = public_key_hash.into();
-
+fn generate_prev_script(public_key_hash: hash160::Hash) -> Script {
     let mut prev_script = vec![0x76, 0xa9, 0x14];
 
     prev_script.append(&mut public_key_hash[..].to_vec());
@@ -41,7 +40,7 @@ impl UnlockP2wpkh for SecretKey {
             witness: vec![Witness::Signature(self), Witness::PublicKey(public_key)],
             sequence: super::SEQUENCE_ALLOW_NTIMELOCK_NO_RBF,
             locktime: 0,
-            prev_script: generate_prev_script(public_key.into()),
+            prev_script: generate_prev_script(hash160::Hash::hash(&public_key.serialize())),
         }
     }
 }
