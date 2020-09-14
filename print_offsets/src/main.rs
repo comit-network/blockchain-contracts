@@ -15,15 +15,15 @@
 
 mod calculate_offsets;
 
-use self::calculate_offsets::{
+use crate::calculate_offsets::placeholder_offsets;
+use crate::calculate_offsets::{
     bitcoin::BitcoinScript, ethereum::EthereumContract, offset::to_markdown, Contract,
 };
-use crate::calculate_offsets::placeholder_offsets;
 use std::ffi::OsStr;
 
-const HETH_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/ethereum/heth_template/";
-const HERC20_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/ethereum/herc20_template/";
-const HBIT_TEMPLATE_FOLDER: &str = "./src/bin/calculate_offsets/bitcoin/hbit_template/";
+const HETH_TEMPLATE_FOLDER: &str = "./print_offsets/heth_template/";
+const HERC20_TEMPLATE_FOLDER: &str = "./print_offsets/herc20_template/";
+const HBIT_TEMPLATE_FOLDER: &str = "./print_offsets/hbit_template/";
 
 #[allow(clippy::print_stdout)]
 fn main() -> Result<(), Error> {

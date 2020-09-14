@@ -1,0 +1,17 @@
+[package]
+name = "print_offsets"
+version = "0.1.0"
+authors = ["CoBloX developers <team@coblox.tech>"]
+edition = "2018"
+description = "Commandline tool for printing the exact bytecode of the COMIT contracts."
+readme = "./README.md"
+license-file = "./LICENSE.md"
+
+[dependencies]
+blockchain_contracts = { path = "../lib" }
+serde_json = "1"
+regex = "1"
+byteorder = "1"
+itertools = "0.8"
+serde = { version = "1", features = ["derive"] }
+hex = "0.4"
