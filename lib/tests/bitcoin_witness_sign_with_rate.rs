@@ -29,7 +29,7 @@ fn sign_with_rate() {
 
     let alice_addr: Address = client.get_new_address().unwrap();
 
-    let rate = 42;
+    let rate = Amount::from_sat(42);
 
     let primed_tx = PrimedTransaction {
         inputs: vec![PrimedInput::new(

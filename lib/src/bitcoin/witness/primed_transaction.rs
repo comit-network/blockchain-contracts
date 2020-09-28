@@ -121,15 +121,14 @@ impl PrimedTransaction {
     pub fn sign_with_rate<C: secp256k1::Signing>(
         self,
         secp: &Secp256k1<C>,
-        fee_per_byte: usize,
+        fee_per_byte: Amount,
     ) -> Result<Transaction, Error> {
         let mut transaction = self._transaction_without_signatures_or_output_values();
 
         let weight = transaction.get_weight();
-        let fee = weight
-            .checked_mul(fee_per_byte)
+        let fee = fee_per_byte
+            .checked_mul(weight as u64)
             .ok_or(Error::OverflowingFee)?;
-        let fee = Amount::from_sat(fee as u64);
 
         if self.total_input_value() < fee {
             return Err(Error::FeeHigherThanInputValue);
@@ -218,7 +217,7 @@ mod test {
         };
         let total_input_value = primed_txn.total_input_value();
 
-        let rate = 42;
+        let rate = Amount::from_sat(42);
 
         let estimated_weight = primed_txn.estimate_weight();
         let transaction = primed_txn.sign_with_rate(&secp, rate).unwrap();
