@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replace `usize` with `bitcoin::Amount` in the primed transaction interfaces.
 
+### Fixed
+- Use the transaction size instead of weight for `sign_with_rate`. 
+Also explicitly state the expected rate unit: sat/vByte.
+
 ## [0.4.0] - 2020-09-15
 
 ### Changed

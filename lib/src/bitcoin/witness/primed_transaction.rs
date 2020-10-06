@@ -183,6 +183,15 @@ impl PrimedTransaction {
         }
     }
 
+    #[deprecated(
+        since = "0.4.1",
+        note = "`estimate_size` should be used instead for fee purposes."
+    )]
+    pub fn estimate_weight(&self) -> usize {
+        self._transaction_without_signatures_or_output_values()
+            .get_weight()
+    }
+
     pub fn estimate_size(&self) -> usize {
         self._transaction_without_signatures_or_output_values()
             .get_size()
