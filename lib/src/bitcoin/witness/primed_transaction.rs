@@ -121,12 +121,12 @@ impl PrimedTransaction {
     pub fn sign_with_rate<C: secp256k1::Signing>(
         self,
         secp: &Secp256k1<C>,
-        fee_per_byte: Amount,
+        fee_per_vbyte: Amount,
     ) -> Result<Transaction, Error> {
         let mut transaction = self._transaction_without_signatures_or_output_values();
 
-        let weight = transaction.get_weight();
-        let fee = fee_per_byte
+        let weight = transaction.get_size();
+        let fee = fee_per_vbyte
             .checked_mul(weight as u64)
             .ok_or(Error::OverflowingFee)?;
 
@@ -183,9 +183,9 @@ impl PrimedTransaction {
         }
     }
 
-    pub fn estimate_weight(&self) -> usize {
+    pub fn estimate_size(&self) -> usize {
         self._transaction_without_signatures_or_output_values()
-            .get_weight()
+            .get_size()
     }
 }
 
@@ -197,7 +197,7 @@ mod test {
     use std::str::FromStr;
 
     #[test]
-    fn estimate_weight_and_sign_with_fee_are_correct_p2wpkh() -> Result<(), failure::Error> {
+    fn estimate_size_and_sign_with_fee_are_correct_p2wpkh() -> Result<(), failure::Error> {
         let secp = Secp256k1::signing_only();
         let private_key =
             PrivateKey::from_str("L4nZrdzNnawCtaEcYGWuPqagQA3dJxVPgN8ARTXaMLCxiYCy89wm")?;
@@ -219,14 +219,18 @@ mod test {
 
         let rate = Amount::from_sat(42);
 
-        let estimated_weight = primed_txn.estimate_weight();
+        let estimated_size = primed_txn.estimate_size();
         let transaction = primed_txn.sign_with_rate(&secp, rate).unwrap();
 
-        let actual_weight = transaction.get_weight();
+        let actual_size = transaction.get_size();
         let fee = total_input_value.as_sat() - transaction.output[0].value;
 
-        assert_eq!(estimated_weight, actual_weight, "weight is correct");
-        assert_eq!(fee, 18354, "actual fee paid is correct");
+        assert_eq!(estimated_size, actual_size, "weight is correct");
+        assert_eq!(
+            fee,
+            rate.as_sat() * actual_size as u64,
+            "actual fee paid is correct"
+        );
         Ok(())
     }
 }
