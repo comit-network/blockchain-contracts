@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.4.1] - 2020-10-06
+
 ### Changed
 - Replace `usize` with `bitcoin::Amount` in the primed transaction interfaces.
 
@@ -50,7 +52,9 @@ Also explicitly state the expected rate unit: sat/vByte.
 - Add implementation of COMIT RFC-003 for Ether.
 - Add implementation of COMIT RFC-003 for ERC-20.
 
-[Unreleased]: https://github.com/coblox/blockchain-contracts/compare/0.3.2...HEAD
+[Unreleased]: https://github.com/coblox/blockchain-contracts/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/coblox/blockchain-contracts/compare/0.4.0...0.4.1
+[0.4.0]: https://github.com/coblox/blockchain-contracts/compare/0.3.2...0.4.0
 [0.3.2]: https://github.com/coblox/blockchain-contracts/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/coblox/blockchain-contracts/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/coblox/blockchain-contracts/compare/0.2.0...0.3.0
