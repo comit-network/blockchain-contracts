@@ -13,7 +13,7 @@ license-file = "../LICENSE.md"
 
 [dependencies]
 byteorder = "1"
-hex-literal = "0.2"
+hex-literal = "0.3"
 regex = "1"
 rust_bitcoin = { version = "0.25", package = "bitcoin" }
 
