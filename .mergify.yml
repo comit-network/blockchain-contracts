@@ -11,7 +11,6 @@ pull_request_rules:
     conditions:
       - "status-success=ci (1.40.0)"
       - "status-success=ci (stable)"
-      - "status-success=license/cla"
       - "#approved-reviews-by>=2"
       - label!=work-in-progress
       - label!=blocked
