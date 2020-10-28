@@ -1,4 +1,2 @@
 status = ["ci (1.40.0)", "ci (stable)"]
-pr_status = [
-    "license/cla"
-]
+pr_status = []
