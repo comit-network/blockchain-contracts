@@ -12,7 +12,7 @@ blockchain_contracts = { path = "../lib" }
 serde_json = "1"
 regex = "1"
 byteorder = "1"
-itertools = "0.8"
+itertools = "0.10"
 serde = { version = "1", features = ["derive"] }
 hex = "0.4"
 anyhow = "1"
